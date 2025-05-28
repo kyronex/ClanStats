@@ -1,0 +1,98 @@
+<div class="container mt-5">
+	<table id="river-race-logs-table">
+        <thead>
+        {#
+            TODO mettre en place les checkbox pour l'historique 
+         #}
+            <tr>
+                <td colspan="5">Nombre de resultat : {{ riverRaceLogs|length }}</td>
+            </tr>
+            <tr>
+                <th></th>
+                <th>Season Id</th>
+                <th>Section Index</th>
+                <th>Created Date</th>
+                <th>
+                    <button data-action="historiqueClanWar#call" data-clan-tag="{{ tag }}" title="Calcule l'historique de toutes les guerres selectionnées">Historique</button>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+			{% for riverRaceLog in riverRaceLogs %}
+                <tr>
+                    <td>
+                        <button data-action="riverRaceLog#togglerShow" data-target-toggler="{{ riverRaceLog.seasonId }}_{{ riverRaceLog.sectionIndex }}">+</button>
+                    </td>
+                    <td>{{ riverRaceLog.seasonId }}</td>
+                    <td>{{ riverRaceLog.sectionIndex }}</td>
+                    <td>{{ riverRaceLog.createdDate }}</td>
+                    <td>
+                        <input type="checkbox" id="HC_{{ riverRaceLog.seasonId }}_{{ riverRaceLog.sectionIndex }}" name="historiqueCheckbox" value="{{ riverRaceLog.seasonId }}_{{ riverRaceLog.sectionIndex }}" title="Selectionne cette guerres dans l'historique" checked>
+                    </td>
+                </tr>
+		        <tr id="{{ riverRaceLog.seasonId }}_{{ riverRaceLog.sectionIndex }}" hidden >
+                    <td colspan="5">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%"></th>
+                                    <th style="width: 20%">Name</th>
+                                    <th style="width: 10%">Tag</th>
+                                    <th style="width: 5%">Rank</th>
+                                    <th style="width: 10%">Trophy Change</th>
+                                    <th style="width: 10%">Fame</th>
+                                    <th style="width: 15%">Clan Score</th>
+                                    <th style="width: 15%">Finish Time</th>
+                                    <th style="width: 10%">Badge Id</th>
+                                </tr>
+                            </thead>
+			                {% for clan in riverRaceLog.clans %}
+                            <tbody>
+                                <tr >
+                                    <td>
+                                        <button data-action="clanRiverRaceLog#togglerShow" data-target-toggler="{{ riverRaceLog.seasonId }}_{{ riverRaceLog.sectionIndex }}_{{ clan.tag }}">+</button>
+                                    </td>
+                                    <td>{{ clan.name }}</td>
+                                    <td>{{ clan.tag }}</td>
+                                    <td>{{ clan.rank }}</td>
+                                    <td>{{ clan.trophyChange }}</td>
+                                    <td>{{ clan.fame }}</td>
+                                    <td>{{ clan.clanScore }}</td>
+                                    <td>{{ clan.finishTime }}</td>
+                                    <td>{{ clan.badgeId }}</td>
+                                </tr>    
+                                <tr id="{{ riverRaceLog.seasonId }}_{{ riverRaceLog.sectionIndex }}_{{ clan.tag }}" hidden>
+                                    <td colspan="9">
+                                        <table style="width: 100%">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 25%">Name</th>
+                                                    <th style="width: 25%">Tag</th>
+                                                    <th style="width: 20%">Fame</th>
+                                                    <th style="width: 15%">Boat Attacks</th>
+                                                    <th style="width: 15%">Decks Used</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for participant in clan.participants %}
+                                                <tr id="{{ riverRaceLog.seasonId }}_{{ riverRaceLog.sectionIndex }}_{{ clan.tag }}_{{ participant.tag }}">
+                                                    <td>{{ participant.name }}</td>
+                                                    <td>{{ participant.tag }}</td>
+                                                    <td>{{ participant.fame }}</td>
+                                                    <td>{{ participant.boatAttacks }}</td>
+                                                    <td>{{ participant.decksUsed }}</td>
+                                                </tr> 
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            {% endfor %} 
+                        </table>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+	</table>
+</div>

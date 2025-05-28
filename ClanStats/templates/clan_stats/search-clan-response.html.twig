@@ -1,0 +1,31 @@
+<div class="container mt-5">
+    <div>
+        <table id="search-clans-table">
+            <tr>
+                <td>Nombre de resultat : {{ clans|length }}</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>tag</td>
+                <td>score</td>
+                <td>warTrophies</td>
+                <td>donations</td>
+                <td>members</td>
+                <td></td>
+            </tr>
+            {% for clan in clans %}
+                <tr data-clan-tag="{{ clan.tag }}">
+                    <td>{{ clan.name }}</td>
+                    <td>{{ clan.tag }}</td>
+                    <td>{{ clan.clanScore }}</td>
+                    <td>{{ clan.clanWarTrophies }}</td>
+                    <td>{{ clan.donationsPerWeek }}</td>
+                    <td>{{ clan.members }}</td>
+                    <td>
+                        <button data-action="clanRiverRaceLog#call" data-clan-tag="{{ clan.tag }}">Selectionner</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>

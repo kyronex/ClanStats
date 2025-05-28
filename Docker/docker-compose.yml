@@ -1,0 +1,66 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    container_name: clan_stats_web
+    ports:
+      - "80:80"
+    volumes:
+      - ../ClanStats:/var/www/html
+    networks:
+      - clan-stats-network
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
+    restart: unless-stopped
+    depends_on:
+      - db
+  db:
+    image: mysql:8.0
+    container_name: clan_stats_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - clan-stats-network
+    restart: unless-stopped
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: clan_stats_phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8080:80"
+    networks:
+      - clan-stats-network
+    depends_on:
+     - db
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: clan_stats_ngrok
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command: http web:80
+    ports:
+      - "4040:4040"
+    networks:
+      - clan-stats-network
+    depends_on:
+      - web
+
+networks:
+  clan-stats-network:
+    driver: bridge
+
+volumes:
+  db_data:

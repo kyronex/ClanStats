@@ -1,0 +1,46 @@
+# Fichiers d'environnement et secrets
+docker/.env
+*.env.local
+*.env.*.local
+
+# Dossiers et fichiers Symfony
+/ClanStats/var/
+/ClanStats/vendor/
+/ClanStats/bin/*
+!/ClanStats/bin/console
+/ClanStats/public/bundles/
+/ClanStats/var/
+/ClanStats/vendor/
+
+# Fichiers PHPUnit
+/ClanStats/phpunit.xml
+.phpunit.result.cache
+
+# Fichiers de configuration locaux
+/ClanStats/.env.local
+/ClanStats/.env.local.php
+/ClanStats/.env.*.local
+
+# Logs et bases de données
+*.log
+*.sqlite
+*.db
+/ClanStats/var/log/*
+!/ClanStats/var/log/.gitkeep
+
+# Fichiers de cache
+/ClanStats/var/cache/*
+!/ClanStats/var/cache/.gitkeep
+*.php-version
+.php_cs.cache
+
+
+# Fichiers Docker spécifiques
+docker/.env
+# docker-compose.override.yml (si vous utilisez des overrides personnels)
+
+
+# Autres fichiers temporaires
+*.tmp
+*.swp
+*~

@@ -1,0 +1,91 @@
+<div class="container mt-5">
+	<table id="clan-info-table">
+        <thead>
+            <tr>
+                <td colspan="2">Informations du Clan</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th style="width: 30%">Nom</th>
+                <td>{{ clan.name }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Tag</th>
+                <td>{{ clan.tag }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Description</th>
+                <td>{{ clan.description }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Nombre de membres</th>
+                <td>{{ clan.members }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Score</th>
+                <td>{{ clan.clanScore }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Donations par semaine</th>
+                <td>{{ clan.donationsPerWeek }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Statut</th>
+                <td>{{ clan.type }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Trophées requis</th>
+                <td>{{ clan.requiredTrophies }}</td>
+            </tr>
+            <tr>
+                <th style="width: 30%">Score de la guerre</th>
+                <td>{{ clan.clanWarTrophies }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <button data-action="clanInfo#togglerShow" data-target-toggler="membersClan_{{ clan.tag }}">+</button>
+                </td>
+                <td>
+                    Membres du clan
+                </td>
+            </tr>
+            <tr id="membersClan_{{ clan.tag }}" hidden >
+                    <td colspan="2">
+                        <table style="width: 100%">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%">Nom</th>
+                                    <th style="width: 10%">Tag</th>
+                                    <th style="width: 8%">Niveau</th>
+                                    <th style="width: 10%">Trophées</th>
+                                    <th style="width: 10%">Rôle</th>
+                                    <th style="width: 8%">Rang</th>
+                                    <th style="width: 12%">Rang Précédent</th>
+                                    <th style="width: 10%">Dons</th>
+                                    <th style="width: 12%">Dons reçus</th>
+                                    <th style="width: 10%">Dernière Connexion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in clan.membersList %}
+                                <tr >
+                                    <td>{{ member.name }}</td>
+                                    <td>{{ member.tag }}</td>
+                                    <td>{{ member.expLevel }}</td>
+                                    <td>{{ member.trophies }}</td>
+                                    <td>{{ member.role }}</td>
+                                    <td>{{ member.clanRank }}</td>
+                                    <td>{{ member.previousClanRank }}</td>
+                                    <td>{{ member.donations }}</td>
+                                    <td>{{ member.donationsReceived }}</td>
+                                    <td>{{ member.lastSeen }}</td>
+                                </tr>    
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+        </tbody>
+	</table>
+</div>
