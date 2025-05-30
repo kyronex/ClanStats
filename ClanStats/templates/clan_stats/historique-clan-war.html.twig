@@ -1,0 +1,94 @@
+<style>
+/* CSS minimal et contextualisé */
+#historique-clan-war-table th:nth-child(1) { width: 20%; }
+#historique-clan-war-table th:nth-child(2) { width: 12%; }
+#historique-clan-war-table th:nth-child(3) { width: 10%; }
+#historique-clan-war-table th:nth-child(4) { width: 12%; }
+#historique-clan-war-table th:nth-child(5) { width: 10%; }
+#historique-clan-war-table th:nth-child(6) { width: 10%; }
+#historique-clan-war-table th:nth-child(7) { width: 13%; }
+#historique-clan-war-table th:nth-child(8) { width: 10%; }
+#historique-clan-war-table th:nth-child(9) { width: 3%; }
+
+#historique-clan-war-table .details-table th:nth-child(1) { width: 25%; }
+#historique-clan-war-table .details-table th:nth-child(2) { width: 20%; }
+#historique-clan-war-table .details-table th:nth-child(3) { width: 15%; }
+#historique-clan-war-table .details-table th:nth-child(4) { width: 15%; }
+#historique-clan-war-table .details-table { font-size: 0.9rem; }
+</style>
+
+<div class="container mt-5">
+    <table id="historique-clan-war-table" class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th colspan="9">Historique des guerres</th>
+            </tr>
+            <tr>
+                {% if activeMembers %}
+                <th colspan="9">Membres actifs : {{ Members|length }}</th>
+                {% else %}
+                <th colspan="9">Ex membres : {{ Members|length }}</th>
+                {% endif %} 
+            </tr>
+            <tr>
+                <th>Name</th>
+                <th>Participations Totales</th>
+                <th>Total Fame</th>
+                <th>Total Boats Attacked</th>
+                <th>Total Decks Used</th>
+                <th>Average Fame</th>
+                <th>Average Boats Attacked</th>
+                <th>Average Decks Used</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for memberKey, memberData in Members %}
+                <tr data-clan-tag="{{ memberKey }}">
+                    <td>{{ memberData.name }}</td>
+                    <td>{{ memberData.totalWarsParticipated }}</td>
+                    <td>{{ memberData.totalWarsFame|number_format }}</td>
+                    <td>{{ memberData.totalWarsBoatAttacks }}</td>
+                    <td>{{ memberData.totalWarsDecksUsed }}</td>
+                    <td>{{ memberData.averageWarsFame|number_format(2) }}</td>
+                    <td>{{ memberData.averageWarsBoatAttacks|number_format(2) }}</td>
+                    <td>{{ memberData.averageWarsDecksUsed|number_format(2) }}</td>
+                    <td>
+                        <button 
+                            class="btn btn-sm btn-outline-secondary"
+                            data-action="historiqueDetailsWar#togglerShow" 
+                            data-target-toggler="{{ memberKey }}_details">
+                            +
+                        </button>
+                    </td>
+                </tr>
+                <tr id="{{ memberKey }}_details" hidden>
+                    <td colspan="9">
+                        <table class="table table-sm details-table">
+                            <thead>
+                                <tr>
+                                    <th>Session Id</th>
+                                    <th>Fame</th>
+                                    <th>Boat Attacks</th>
+                                    <th>Decks Used</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for warKey, warData in memberData %}
+                                    {% if warKey matches "/^\\d+_\\d+$/" %}
+                                        <tr>
+                                            <td>{{ warKey }}</td>
+                                            <td>{{ warData.fame|number_format }}</td>
+                                            <td>{{ warData.boatAttacks }}</td>
+                                            <td>{{ warData.decksUsed }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
