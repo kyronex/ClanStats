@@ -31,7 +31,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Active le module rewrite d'Apache
 RUN a2enmod rewrite
-COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY Docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Create new Symfony project
 # RUN composer create-project symfony/webapp-skeleton ClanStats
