@@ -50,9 +50,7 @@ final class ClanStatsController extends AbstractController
                 "maxMembers" => $data["maxMembers"],
                 "minScore" => $data["minScore"]
             ];
-
             $clans = $this->clanStatsService->getSearchClanName($params);
-
             $serializedClans = $this->serializer->serialize($clans, 'json', ['groups' => 'ajaxed']);
             $htmlSearchClans = $this->renderView("clan_stats/search-clan-response.html.twig", [
                 "clans" => $clans
@@ -83,6 +81,7 @@ final class ClanStatsController extends AbstractController
             $tag = json_decode($request->getContent(), true) ?? null;
             $this->logger->info("function 'riverRaceLog' pour '" . $tag . "'.");
             $result = $this->clanStatsService->getRiverRaceLog($tag);
+            $serializedResult = $this->serializer->serialize($result, 'json', ['groups' => 'ajaxed']);
             $htmlRiverRaceLogs = $this->renderView("clan_stats/river-race-log-response.html.twig", [
                 "riverRaceLogs" => $result["riverRaceLogs"],
                 "tag" => $tag
@@ -93,7 +92,8 @@ final class ClanStatsController extends AbstractController
             return new JsonResponse([
                 "success" => true,
                 "htmlClan" => $htmlClan,
-                "htmlRiverRaceLogs" => $htmlRiverRaceLogs
+                "htmlRiverRaceLogs" => $htmlRiverRaceLogs,
+                "serializedResult" => $serializedResult
             ]);
         }
         return new JsonResponse([
@@ -110,12 +110,18 @@ final class ClanStatsController extends AbstractController
             $this->logger->info("function 'historiqueClanWar'");
             $result = $this->clanStatsService->getHistoriqueClanWar($data["clanTag"], $data["warsSelected"]);
             $serializedwarsPlayersStats = $this->serializer->serialize($result, 'json', ['groups' => 'ajaxed']);
-            $htmlClan = $this->renderView("clan_stats/clan-info-response.html.twig", [
-                "activeMembers" => $result["activeMembers"],
-                "exMembers" => $result["exMembers"]
+            $htmlHistorique = $this->renderView("clan_stats/historique-clan-war.html.twig", [
+                "Members" => $result["activeMembers"],
+                "activeMembers" => true,
+            ]);
+            $htmlHistoriqueEx = $this->renderView("clan_stats/historique-clan-war.html.twig", [
+                "Members" => $result["exMembers"],
+                "activeMembers" => false,
             ]);
             return new JsonResponse([
                 "success" => true,
+                "htmlHistorique" => $htmlHistorique,
+                "htmlHistoriqueEx" => $htmlHistoriqueEx,
                 "serializedwarsPlayersStats" => $serializedwarsPlayersStats
             ]);
         }

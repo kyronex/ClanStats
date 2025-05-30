@@ -77,11 +77,15 @@ class ClashRoyaleWarTools
             } else {
                 $playersStats[$player]["currentPlayer"] = false;
             }
+            $playersStats[$player]["name"] = "";
             $playersStats[$player]["totalWarsParticipated"] = count($wars);
             $totalWarsFame = 0;
             $totalWarsBoatAttacks = 0;
             $totalWarsDecksUsed = 0;
             foreach ($wars as $stats) {
+                if ($playersStats[$player]["name"] == "") {
+                    $playersStats[$player]["name"] = $stats->getName();
+                }
                 $totalWarsFame += $stats->getFame();
                 $totalWarsBoatAttacks += $stats->getBoatAttacks();
                 $totalWarsDecksUsed += $stats->getDecksUsed();

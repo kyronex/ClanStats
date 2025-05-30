@@ -1,29 +1,113 @@
-{% extends "base.html.twig" %} {% block title %}Clan Stats{% endblock %} {%
-block body %}
-<div class="container mt-5">
-	<div id="response-clan-info-table"></div>
-	<div id="response-historique-clan-war"></div>
+{% extends "base.html.twig" %}
 
-	<div>
-		{{ form_start(form, { action: path("app_clan_stats_search") }) }}
-		{{ form_row(form.nomClan) }}
-		{{ form_row(form.minMembers) }}
-		{{ form_row(form.maxMembers) }}
-		{{ form_row(form.minScore) }}
-		<button type="submit" class="btn btn-primary">Search</button>
-		{{ form_end(form) }}
-	</div>
-	<div id="response-nom-clan-form"></div>
-	<div id="response-tag-clan"></div>
+{% block title %}Clan Stats{% endblock %}
+
+{% block body %}
+<style>
+/* CSS minimal et contextualisé pour le layout principal */
+.search-form-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+}
+
+.search-form-container h4 {
+    color: #495057;
+    margin-bottom: 1rem;
+}
+
+.response-container {
+    margin-bottom: 2rem;
+}
+
+.response-container:empty {
+    display: none;
+}
+</style>
+
+<div class="container mt-5">
+    <!-- Zone d'affichage des réponses (ordre logique) -->
+    <div id="response-clan-info-table" class="response-container"></div>
+    <div id="response-tag-clan" class="response-container"></div>
+    <div id="response-nom-clan-form" class="response-container"></div>
+    <div id="response-historique-clan-war" class="response-container"></div>
+    <div id="response-historique-clan-war-ex" class="response-container"></div>
+
+    <!-- Formulaire de recherche -->
+    <div class="search-form-container">
+        <h4><i class="fas fa-search"></i> Recherche de Clans</h4>
+        
+        {{ form_start(form, { 
+            action: path("app_clan_stats_search"),
+            attr: { class: 'row g-3' }
+        }) }}
+        
+        <div class="col-md-6">
+            {{ form_row(form.nomClan, { 
+                label_attr: { class: 'form-label' },
+                attr: { class: 'form-control', placeholder: 'Nom du clan...' }
+            }) }}
+        </div>
+        
+        <div class="col-md-3">
+            {{ form_row(form.minMembers, { 
+                label_attr: { class: 'form-label' },
+                attr: { class: 'form-control', placeholder: 'Min' }
+            }) }}
+        </div>
+        
+        <div class="col-md-3">
+            {{ form_row(form.maxMembers, { 
+                label_attr: { class: 'form-label' },
+                attr: { class: 'form-control', placeholder: 'Max' }
+            }) }}
+        </div>
+        
+        <div class="col-md-6">
+            {{ form_row(form.minScore, { 
+                label_attr: { class: 'form-label' },
+                attr: { class: 'form-control', placeholder: 'Score minimum...' }
+            }) }}
+        </div>
+        
+        <div class="col-md-6 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="fas fa-search"></i> Rechercher
+            </button>
+        </div>
+        
+        {{ form_end(form) }}
+    </div>
 </div>
-{% endblock %} {% block javascripts %}
+{% endblock %}
+{% block javascripts %}
 <script>
+	window.App = window.App || {};
+	window.App.Tools = window.App.Tools || {};
+	window.App.Containers = window.App.Containers || {};
+
 	const ROUTES = {
 		riverRaceLog: "{{ path('app_clan_stats_riverRaceLog') }}" ,
 		historiqueClanWar: "{{ path('app_clan_stats_historiqueClanWar') }}" };
-	const divRespSort = ["response-nom-clan-form","response-clan-info-table", "response-tag-clan", "response-historique-clan-war"];
-	window.App = window.App || {};
-	window.App.Tools = window.App.Tools || {};
+	const divRespSort = ["response-nom-clan-form","response-clan-info-table", "response-tag-clan", "response-historique-clan-war", "response-historique-clan-war-ex"];
+	
+	window.App.Containers = {
+    get nomClanForm() { return document.getElementById("response-nom-clan-form"); },
+    get tagClan() { return document.getElementById("response-tag-clan"); },
+    get clanInfoTable() { return document.getElementById("response-clan-info-table"); },
+    get historiqueClanWar() { return document.getElementById("response-historique-clan-war"); },
+    get historiqueClanWarEx() { return document.getElementById("response-historique-clan-war-ex"); }
+	};
+
+	const AJAX_CONFIG = {
+		headers: {
+			"X-Requested-With": "XMLHttpRequest",
+			"Content-Type": "application/json",
+		},
+		method: "POST"
+	};
 
 	/**
 	 * @function window.App.Tools.testSelector
@@ -46,8 +130,6 @@ block body %}
 		}
 		return target;
 	};
-
-	// TODO faire la gestion de l'historique des guerres
 
 	/**
 	 * @function window.App.toggleDisabledButton
@@ -100,125 +182,140 @@ block body %}
 		}
 	};
 
+	function handleClanRiverRaceLog(event) {
+		let callClanRiverRaceLog = event.target.closest("[data-action^='clanRiverRaceLog#call']");
+		if	(!callClanRiverRaceLog) return false;
+		event.preventDefault();
+		let clanTag = callClanRiverRaceLog.getAttribute("data-clan-tag");
+		if (!clanTag) {
+        	console.warn("Clan tag manquant");
+        	return true;
+    	}
+		App.toggleDisabledButton(callClanRiverRaceLog);
+		let url = ROUTES.riverRaceLog;
+		let options = {
+			...AJAX_CONFIG,
+			body: JSON.stringify(clanTag), // Uniquement pour POST/PUT
+		};
+		fetch(url, options)
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error("Erreur réseau");
+				}
+				App.emptyRespDivsAfter(App.Containers.clanInfoTable);
+				return response.json();
+			})
+			.then((data) => {
+				if (data.success) {
+					console.log("data.success" + url);
+					App.Containers.clanInfoTable.innerHTML = data.htmlClan;
+					App.Containers.tagClan.innerHTML = data.htmlRiverRaceLogs;
+					App.Containers.clanInfoTable.scrollIntoView({ behavior: 'smooth' });
+				} else {
+					if (data.errors) {
+						console.log(data.errors);
+					}
+				}
+			})
+			.catch((error) => {})
+			.finally(() => {
+				App.toggleDisabledButton(callClanRiverRaceLog);
+			});
+		return true;
+	}
+
+	function handleToggleShowTarget(event) {
+		let togglerShowTarget = event.target.closest("[data-action$='#togglerShow']");
+		if	(!togglerShowTarget) return false;
+		event.preventDefault();
+		let idTargetToggler = togglerShowTarget.getAttribute("data-target-toggler");
+		if (!idTargetToggler) {
+			console.warn("❌ Attribut 'data-target-toggler' manquant sur l'élément:", togglerShowTarget);
+        	return true;
+    	}
+		let targetToggler = document.getElementById(idTargetToggler);
+		if (!targetToggler) {
+        	console.warn(`❌ Élément cible '${idTargetToggler}' non trouvé`);
+        	return true;
+    	}
+		let isHidden = targetToggler.hasAttribute("hidden") || targetToggler.hidden;
+		if (isHidden) {
+			targetToggler.removeAttribute("hidden");
+			targetToggler.hidden = false;
+			togglerShowTarget.textContent = "-";
+		} else {
+			targetToggler.setAttribute("hidden", "");
+			targetToggler.hidden = true;
+			togglerShowTarget.textContent = "+";
+		}
+		return true;
+	}
+
+	function handleHistoriqueClanWar(event) {
+		let callHistoriqueClanWar = event.target.closest("[data-action^='historiqueClanWar#call']");
+		if	(!callHistoriqueClanWar) return false;
+		event.preventDefault();
+		let clanTag = callHistoriqueClanWar.getAttribute("data-clan-tag");
+		if (!clanTag) {
+			console.warn("Clan tag manquant");	
+			return true;
+		}
+		let allCheckedHCW = document.querySelectorAll('input[type="checkbox"][name="historiqueCheckbox"]:checked');
+		if (allCheckedHCW.length === 0) {
+			console.warn("Aucun checkbox coché");
+			return true;
+		}
+		let warsSelected = [];
+		for (let i = 0; i < allCheckedHCW.length; i++) {
+			warsSelected.push(allCheckedHCW[i].value);
+		}
+		App.toggleDisabledButton(callHistoriqueClanWar);
+		let url = ROUTES.historiqueClanWar;
+		let options = {
+			...AJAX_CONFIG,
+			body: JSON.stringify({ clanTag, warsSelected }), // Uniquement pour POST/PUT
+		};
+		fetch(url, options)
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error("Erreur réseau");
+				}
+				App.emptyRespDivsAfter(App.Containers.historiqueClanWar);
+				return response.json();
+			})
+			.then((data) => {
+				if (data.success) {
+					console.log("data.success" + url);
+					App.Containers.historiqueClanWar.innerHTML = data.htmlHistorique;
+					App.Containers.historiqueClanWarEx.innerHTML = data.htmlHistoriqueEx;
+					App.Containers.historiqueClanWar.scrollIntoView({ behavior: 'smooth' });
+				} else {
+					if (data.errors) {
+						console.log(data.errors);
+					}
+				}
+			})
+			.catch((error) => {})
+			.finally(() => {
+				App.toggleDisabledButton(callHistoriqueClanWar);
+			});
+		return true;
+	}
+
 	document.addEventListener("DOMContentLoaded", function () {
 		let form = document.getElementById("nom-clan-form");
-		let divRespNCF = document.getElementById("response-nom-clan-form");
-		let divRespTC = document.getElementById("response-tag-clan");
-		let divRespCIT = document.getElementById("response-clan-info-table");
-		let divRespHCW = document.getElementById("response-historique-clan-war");
 		let submitButton = form.querySelector("button[type='submit']");
 
 		document.addEventListener("click", function (event) {
-			let callClanRiverRaceLog = event.target.closest("[data-action^='clanRiverRaceLog#call']");
-			if (callClanRiverRaceLog) {
-				App.toggleDisabledButton(callClanRiverRaceLog);
-				let clanTag = callClanRiverRaceLog.getAttribute("data-clan-tag");
-				let url = ROUTES.riverRaceLog;
-				// Options de la requête
-				let options = {
-					method: "POST",
-					headers: {
-						"X-Requested-With": "XMLHttpRequest",
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(clanTag), // Uniquement pour POST/PUT
-				};
-				fetch(url, options)
-					.then((response) => {
-						if (!response.ok) {
-							throw new Error("Erreur réseau");
-						}
-						App.emptyRespDivsAfter(divRespCIT);
-						return response.json();
-					})
-					.then((data) => {
-						if (data.success) {
-							console.log("data.success" + url);
-							//console.log(data);
-							//console.log(data.htmlClanMembers);
-							divRespCIT.innerHTML = data.htmlClan;
-							divRespTC.innerHTML = data.htmlRiverRaceLogs;
-						} else {
-							if (data.errors) {
-								console.log(data.errors);
-							}
-						}
-					})
-					.catch((error) => {})
-					.finally(() => {
-						App.toggleDisabledButton(callClanRiverRaceLog);
-					});
-			}
-
-			let togglerShowTarget = event.target.closest("[data-action$='#togglerShow']");
-            if (togglerShowTarget) {
-				let currentState = togglerShowTarget.textContent ;
-				let idTargetToggler = togglerShowTarget.getAttribute("data-target-toggler");
-				let targetToggler = document.getElementById(idTargetToggler);
-
-				if (currentState === "+") {
-					targetToggler.removeAttribute("hidden");
-					togglerShowTarget.innerHTML = "-";
-				} else {
-					targetToggler.setAttribute("hidden", "");
-					togglerShowTarget.innerHTML = "+";
-				}
-			}
-
-			let callHistoriqueClanWar = event.target.closest("[data-action^='historiqueClanWar#call']");
-			if (callHistoriqueClanWar) {
-				App.toggleDisabledButton(callHistoriqueClanWar);
-				let clanTag = callHistoriqueClanWar.getAttribute("data-clan-tag");
-				let allCheckedHCW = document.querySelectorAll('input[type="checkbox"][name="historiqueCheckbox"]:checked');
-				let warsSelected = [];
-				for (let i = 0; i < allCheckedHCW.length; i++) {
-					warsSelected.push(allCheckedHCW[i].value);
-				}
-				let url = ROUTES.historiqueClanWar;
-				// Options de la requête
-				let options = {
-					method: "POST",
-					headers: {
-						"X-Requested-With": "XMLHttpRequest",
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ clanTag, warsSelected }), // Uniquement pour POST/PUT
-				};
-				fetch(url, options)
-					.then((response) => {
-						if (!response.ok) {
-							throw new Error("Erreur réseau");
-						}
-						App.emptyRespDivsAfter(divRespHCW);
-						return response.json();
-					})
-					.then((data) => {
-						if (data.success) {
-							console.log("data.success" + url);
-							console.log(data);
-							//console.log(data.htmlClanMembers);
-							// divRespCIT.innerHTML = data.htmlClan;
-						} else {
-							if (data.errors) {
-								console.log(data.errors);
-							}
-						}
-					})
-					.catch((error) => {})
-					.finally(() => {
-						App.toggleDisabledButton(callHistoriqueClanWar);
-					});
-			}
+    		handleClanRiverRaceLog(event) ||
+    		handleToggleShowTarget(event) ||
+    		handleHistoriqueClanWar(event);
 		});
 
 		form.addEventListener("submit", function (event) {
 			event.preventDefault(); // Empêche la soumission standard du formulaire
-			//console.log("submit");
 			App.toggleDisabledButton(submitButton);
-			// Récupération des données du formulaire
 			let formData = new FormData(form);
-
-			// Requête fetch
 			fetch(form.action, {
 				method: "POST",
 				headers: {
@@ -230,14 +327,14 @@ block body %}
 					if (!response.ok) {
 						throw new Error("Erreur réseau");
 					}
-					App.emptyRespDivsAfter(divRespNCF);
+					App.emptyRespDivsAfter(App.Containers.nomClanForm);
 					return response.json();
 				})
 				.then((data) => {
 					if (data.success) {
 						console.log("data.success Form");
-						//console.log(data);
-						divRespNCF.innerHTML = data.htmlSearchClans;
+						App.Containers.nomClanForm.innerHTML = data.htmlSearchClans;
+						App.Containers.nomClanForm.scrollIntoView({ behavior: 'smooth' });
 						form.reset();
 					} else {
 						// Si des erreurs de validation sont présentes
@@ -254,7 +351,7 @@ block body %}
 				})
 				.catch((error) => {
 					// Erreur technique
-					divRespNCF.innerHTML = `<div class="alert alert-danger">Une erreur est survenue: ${error.message}</div>`;
+					App.Containers.nomClanForm.innerHTML = `<div class="alert alert-danger">Une erreur est survenue: ${error.message}</div>`;
 				})
 				.finally(() => {
 					App.toggleDisabledButton(submitButton);
