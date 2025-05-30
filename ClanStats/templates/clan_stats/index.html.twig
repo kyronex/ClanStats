@@ -251,6 +251,16 @@
 		return true;
 	}
 
+	function handleHistoriqueCheckboxAll(event) {
+		let HistoriqueCheckboxAll = document.getElementById('HC_all');
+		if	(!HistoriqueCheckboxAll) return false;
+		const checkboxes = document.querySelectorAll('input[type="checkbox"][name="historiqueCheckbox"]');
+
+		checkboxes.forEach(checkbox => {
+			checkbox.checked = HistoriqueCheckboxAll.checked;
+		});
+	}
+
 	function handleHistoriqueClanWar(event) {
 		let callHistoriqueClanWar = event.target.closest("[data-action^='historiqueClanWar#call']");
 		if	(!callHistoriqueClanWar) return false;
@@ -310,6 +320,10 @@
     		handleClanRiverRaceLog(event) ||
     		handleToggleShowTarget(event) ||
     		handleHistoriqueClanWar(event);
+		});
+
+		document.addEventListener("change", function (event) {
+    		handleHistoriqueCheckboxAll(event);
 		});
 
 		form.addEventListener("submit", function (event) {
