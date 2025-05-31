@@ -252,6 +252,7 @@
 	}
 
 	function handleHistoriqueCheckboxAll(event) {
+		if (event.target.id !== 'HC_all') return false;
 		let HistoriqueCheckboxAll = document.getElementById('HC_all');
 		if	(!HistoriqueCheckboxAll) return false;
 		const checkboxes = document.querySelectorAll('input[type="checkbox"][name="historiqueCheckbox"]');
