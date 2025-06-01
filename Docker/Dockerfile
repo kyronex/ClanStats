@@ -1,6 +1,5 @@
 FROM php:8.1-apache
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -8,7 +7,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libicu-dev \
     vim \
-    default-mysql-client
+    default-mysql-client \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install \
@@ -33,24 +35,17 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN a2enmod rewrite
 COPY Docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Create new Symfony project
-# RUN composer create-project symfony/webapp-skeleton ClanStats
-RUN composer create-project symfony/skeleton:"^6.4" ClanStats
-RUN cd ClanStats && composer require \
-    symfony/asset:6.4.* \
-    symfony/form:6.4.* \
-    symfony/http-client:6.4.* \
-    symfony/monolog-bundle \
-    symfony/security-bundle:6.4.* \
-    symfony/serializer:6.4.* \
-    symfony/twig-bundle:6.4.* \
-    symfony/validator:6.4.* \
-    phpdocumentor/reflection-docblock:^5.6 \
-    phpstan/phpdoc-parser:^2.1
+# Copie du script de configuration React
+COPY Docker/setup-react.sh /usr/local/bin/setup-react
+RUN chmod +x /usr/local/bin/setup-react
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+# Script de démarrage intelligent
+COPY Docker/entrypoint.sh /usr/local/bin/entrypoint
+RUN chmod +x /usr/local/bin/entrypoint
+
+CMD ["/usr/local/bin/entrypoint"]

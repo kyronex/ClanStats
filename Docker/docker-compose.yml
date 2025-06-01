@@ -9,6 +9,7 @@ services:
       - "80:80"
     volumes:
       - ../ClanStats:/var/www/html
+      - node_modules_volume:/var/www/html/node_modules  # Volume pour node_modules
     networks:
       - clan-stats-network
     environment:
@@ -65,3 +66,4 @@ networks:
 
 volumes:
   db_data:
+  node_modules_volume:  # Nouveau volume pour node_modules
