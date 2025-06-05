@@ -31,8 +31,8 @@ RUN curl -sS https://get.symfony.com/cli/installer | bash \
 # Set COMPOSER_ALLOW_SUPERUSER
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Active le module rewrite d'Apache
-RUN a2enmod rewrite
+# ✅ AJOUT: Modules Apache pour proxy
+RUN a2enmod rewrite proxy proxy_http proxy_wstunnel
 COPY Docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Copie du script de configuration React

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Démarrage ClanStats..."
+echo "🚀 Démarrage ClanStats ..."
 
 # Vérifier si le projet Symfony existe
 if [ ! -f "composer.json" ]; then
@@ -26,35 +26,38 @@ if [ ! -f "composer.json" ]; then
 else
     echo "✅ Projet Symfony existant détecté"
     
-    # Installer les dépendances si vendor n'existe pas
     if [ ! -d "vendor" ]; then
         echo "📦 Installation dépendances Composer..."
         composer install
     fi
 fi
 
-# Vérifier et installer React si nécessaire
+# Configuration React
 if [ ! -f ".react-configured" ]; then
     echo "🔧 Installation React..."
     setup-react
 else
     echo "✅ React déjà configuré"
     
-    # Vérifier si les node_modules sont présents
     if [ ! -d "node_modules" ]; then
         echo "📦 Réinstallation node_modules..."
         npm install
     fi
-    
-    # Build des assets si nécessaire
-    if [ ! -d "public/build" ]; then
-        echo "🏗️  Build des assets..."
-        npm run dev
-    fi
 fi
+
+# ✅ AJOUT: Démarrage webpack dev server en interne (pas d'exposition externe)
+echo "🔄 Démarrage Webpack Dev Server (interne)..."
+npm run dev-server > /var/log/webpack.log 2>&1 &
+
+# Attendre que le dev server soit prêt
+echo "⏳ Attente du démarrage Webpack Dev Server..."
+sleep 5
 
 # Permissions finales
 chown -R www-data:www-data /var/www/html
 
-echo "🎉 Démarrage Apache..."
+echo "🎉 Démarrage Apache avec Proxy Hot Reload..."
+echo "📍 URL unique: http://localhost"
+echo "🔥 Hot reload actif via proxy Apache!"
+
 exec apache2-foreground

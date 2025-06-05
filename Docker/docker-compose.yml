@@ -9,16 +9,18 @@ services:
       - "80:80"
     volumes:
       - ../ClanStats:/var/www/html
-      - node_modules_volume:/var/www/html/node_modules  # Volume pour node_modules
+      - node_modules_volume:/var/www/html/node_modules
     networks:
       - clan-stats-network
     environment:
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
+      NODE_ENV: development
     restart: unless-stopped
     depends_on:
       - db
+
   db:
     image: mysql:8.0
     container_name: clan_stats_db
@@ -34,6 +36,7 @@ services:
     networks:
       - clan-stats-network
     restart: unless-stopped
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: clan_stats_phpmyadmin
@@ -47,6 +50,7 @@ services:
       - clan-stats-network
     depends_on:
      - db
+
   ngrok:
     image: ngrok/ngrok:latest
     container_name: clan_stats_ngrok
@@ -66,4 +70,4 @@ networks:
 
 volumes:
   db_data:
-  node_modules_volume:  # Nouveau volume pour node_modules
+  node_modules_volume:
