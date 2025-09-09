@@ -32,7 +32,7 @@ RUN curl -sS https://get.symfony.com/cli/installer | bash \
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # ✅ AJOUT: Modules Apache pour proxy
-RUN a2enmod rewrite proxy proxy_http proxy_wstunnel
+RUN a2enmod headers rewrite proxy proxy_http proxy_wstunnel
 COPY Docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Copie du script de configuration React
@@ -42,7 +42,7 @@ RUN chmod +x /usr/local/bin/setup-react
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
-EXPOSE 80
+EXPOSE 80 8081
 
 # Script de démarrage intelligent
 COPY Docker/entrypoint.sh /usr/local/bin/entrypoint

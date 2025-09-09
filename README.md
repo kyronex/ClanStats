@@ -35,7 +35,7 @@ docker-compose -f docker/docker-compose.yml up -d
 Une fois les conteneurs démarrés :
 
 - **Application web** : http://localhost  
-- **PHPMyAdmin** : http://localhost:8080  
+- **PHPMyAdmin** : http://localhost:8083  
 - **Interface Ngrok** (si activée) : http://localhost:4040
 
 ## 🛠️ Commandes Utiles

@@ -7,6 +7,7 @@ services:
     container_name: clan_stats_web
     ports:
       - "80:80"
+      - "8081:8081"
     volumes:
       - ../ClanStats:/var/www/html
       - node_modules_volume:/var/www/html/node_modules
@@ -16,7 +17,7 @@ services:
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
-      NODE_ENV: development
+      NODE_ENV: dev
     restart: unless-stopped
     depends_on:
       - db
@@ -45,7 +46,7 @@ services:
       PMA_USER: ${DB_USER}
       PMA_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "8080:80"
+      - "8083:80"
     networks:
       - clan-stats-network
     depends_on:

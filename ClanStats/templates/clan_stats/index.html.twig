@@ -3,6 +3,7 @@
 {% block title %}Clan Stats{% endblock %}
 
 {% block body %}
+<div id="react-app">PLOP</div>
 <style>
 /* CSS minimal et contextualisé pour le layout principal */
 .search-form-container {
@@ -83,6 +84,7 @@
 </div>
 {% endblock %}
 {% block javascripts %}
+{{ parent() }}
 <script>
 	window.App = window.App || {};
 	window.App.Tools = window.App.Tools || {};
