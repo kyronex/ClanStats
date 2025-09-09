@@ -1,51 +1,30 @@
 FROM php:8.1-apache
 
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    zip \
-    unzip \
-    libicu-dev \
-    vim \
-    default-mysql-client \
+COPY --from=composer:2.6.4 /usr/bin/composer /usr/bin/composer
+
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git zip unzip libicu-dev default-mysql-client vim curl gnupg2 \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends nodejs \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql intl \
+    && a2enmod headers rewrite proxy proxy_http proxy_wstunnel \
+    && curl -sS https://get.symfony.com/cli/installer | bash \
+    && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /root/.symfony5
 
-# Install PHP extensions
-RUN docker-php-ext-install \
-    pdo \
-    pdo_mysql \
-    intl
-
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set the working directory
 WORKDIR /var/www/html
 
-# Install Symfony CLI
-RUN curl -sS https://get.symfony.com/cli/installer | bash \
-    && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
-
-# Set COMPOSER_ALLOW_SUPERUSER
-ENV COMPOSER_ALLOW_SUPERUSER=1
-
-# ✅ AJOUT: Modules Apache pour proxy
-RUN a2enmod headers rewrite proxy proxy_http proxy_wstunnel
+# ✅ CORRECTION : Ajout setup-react.sh avec permissions
 COPY Docker/apache.conf /etc/apache2/sites-available/000-default.conf
-
-# Copie du script de configuration React
-COPY Docker/setup-react.sh /usr/local/bin/setup-react
-RUN chmod +x /usr/local/bin/setup-react
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html
-
-EXPOSE 80 8081
-
-# Script de démarrage intelligent
 COPY Docker/entrypoint.sh /usr/local/bin/entrypoint
-RUN chmod +x /usr/local/bin/entrypoint
+COPY Docker/setup-react.sh /usr/local/bin/setup-react
+
+# ✅ CORRECTION : Permissions pour entrypoint ET setup-react
+RUN chmod +x /usr/local/bin/entrypoint /usr/local/bin/setup-react \
+    && chown -R www-data:www-data /var/www/html
+EXPOSE 80 8081
 
 CMD ["/usr/local/bin/entrypoint"]
