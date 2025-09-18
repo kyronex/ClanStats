@@ -4,29 +4,6 @@
 
 {% block body %}
 <div id="react-app">PLOP</div>
-<style>
-/* CSS minimal et contextualisé pour le layout principal */
-.search-form-container {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    border: 1px solid #dee2e6;
-}
-
-.search-form-container h4 {
-    color: #495057;
-    margin-bottom: 1rem;
-}
-
-.response-container {
-    margin-bottom: 2rem;
-}
-
-.response-container:empty {
-    display: none;
-}
-</style>
 
 <div class="container mt-5">
     <!-- Zone d'affichage des réponses (ordre logique) -->
@@ -37,7 +14,7 @@
     <div id="response-historique-clan-war-ex" class="response-container"></div>
 
     <!-- Formulaire de recherche -->
-    <div class="search-form-container">
+    <div id="react-clan-search" class="search-form-container">
         <h4><i class="fas fa-search"></i> Recherche de Clans</h4>
         
         {{ form_start(form, { 
