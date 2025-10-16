@@ -34,7 +34,7 @@ class ClashRoyaleApi
 
     public function searchClans($params): array
     {
-        $this->logger->info("Lancement de : 'function searchClans'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleApi' function 'searchClans'.");
         $query = ["name" => $params["name"]];
         if (isset($params["minMembers"])) {
             if ($params["minMembers"] >= $this->parameterBag->get("clash_royale.clan.min_member")) {
@@ -59,7 +59,7 @@ class ClashRoyaleApi
 
     public function getPlayer(string $tag): array
     {
-        $this->logger->info("Lancement de : 'function getPlayer'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleApi' function 'getPlayer'.");
         $options = $this->setupOptionApi();
         $url = $this->baseUrl . "/players/" . urlencode($tag);
         return $this->callApi($url, $options);
@@ -67,7 +67,7 @@ class ClashRoyaleApi
 
     public function getClan(string $tag): array
     {
-        $this->logger->info("Lancement de : 'function getClan'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleApi' function 'getClan'.");
         $options = $this->setupOptionApi();
         $url = $this->baseUrl . "/clans/" . urlencode($tag);
         return $this->callApi($url, $options);
@@ -75,7 +75,7 @@ class ClashRoyaleApi
 
     public function getClanMembers(string $tag): array
     {
-        $this->logger->info("Lancement de : 'function getClanMembers'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleApi' function 'getClanMembers'.");
         $options = $this->setupOptionApi();
         $url = $this->baseUrl . "/clans/" . urlencode($tag) . "/members";
         return $this->callApi($url, $options);
@@ -83,7 +83,7 @@ class ClashRoyaleApi
 
     public function getRiverRaceLog(string $tag): array
     {
-        $this->logger->info("Lancement de : 'function getRiverRaceLog'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleApi' function 'getRiverRaceLog'.");
         $options = $this->setupOptionApi();
         $url = $this->baseUrl . "/clans/" . urlencode($tag) . "/riverracelog";
         return $this->callApi($url, $options);

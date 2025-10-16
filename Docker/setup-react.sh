@@ -47,8 +47,8 @@ Encore.setOutputPath("public/build/")
 		options.port = 8081;
 		options.host = "0.0.0.0";
 		options.allowedHosts = "all";
-		options.hot = false;
-		options.liveReload = true;
+		options.hot = true;
+		options.liveReload = false;
 
 		// ✅ FIX SYNTAXE WATCHFILES
 		options.watchFiles = [

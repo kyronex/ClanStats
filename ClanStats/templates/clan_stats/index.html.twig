@@ -3,7 +3,6 @@
 {% block title %}Clan Stats{% endblock %}
 
 {% block body %}
-<div id="react-app">PLOP</div>
 
 <div class="container mt-5">
     <!-- Zone d'affichage des réponses (ordre logique) -->
@@ -14,50 +13,7 @@
     <div id="response-historique-clan-war-ex" class="response-container"></div>
 
     <!-- Formulaire de recherche -->
-    <div id="react-clan-search" class="search-form-container">
-        <h4><i class="fas fa-search"></i> Recherche de Clans</h4>
-        
-        {{ form_start(form, { 
-            action: path("app_clan_stats_search"),
-            attr: { class: 'row g-3' }
-        }) }}
-        
-        <div class="col-md-6">
-            {{ form_row(form.nomClan, { 
-                label_attr: { class: 'form-label' },
-                attr: { class: 'form-control', placeholder: 'Nom du clan...' }
-            }) }}
-        </div>
-        
-        <div class="col-md-3">
-            {{ form_row(form.minMembers, { 
-                label_attr: { class: 'form-label' },
-                attr: { class: 'form-control', placeholder: 'Min' }
-            }) }}
-        </div>
-        
-        <div class="col-md-3">
-            {{ form_row(form.maxMembers, { 
-                label_attr: { class: 'form-label' },
-                attr: { class: 'form-control', placeholder: 'Max' }
-            }) }}
-        </div>
-        
-        <div class="col-md-6">
-            {{ form_row(form.minScore, { 
-                label_attr: { class: 'form-label' },
-                attr: { class: 'form-control', placeholder: 'Score minimum...' }
-            }) }}
-        </div>
-        
-        <div class="col-md-6 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary btn-lg w-100">
-                <i class="fas fa-search"></i> Rechercher
-            </button>
-        </div>
-        
-        {{ form_end(form) }}
-    </div>
+    <div id="react-clan-search" class="search-form-container"></div>
 </div>
 {% endblock %}
 {% block javascripts %}
@@ -71,7 +27,7 @@
 		riverRaceLog: "{{ path('app_clan_stats_riverRaceLog') }}" ,
 		historiqueClanWar: "{{ path('app_clan_stats_historiqueClanWar') }}" };
 	const divRespSort = ["response-nom-clan-form","response-clan-info-table", "response-tag-clan", "response-historique-clan-war", "response-historique-clan-war-ex"];
-	
+
 	window.App.Containers = {
     get nomClanForm() { return document.getElementById("response-nom-clan-form"); },
     get tagClan() { return document.getElementById("response-tag-clan"); },
@@ -122,7 +78,7 @@
 			target = App.Tools.testSelector(selector);
 			if (target) {
 				if (!selectorStates.has(target)) {
-					selectorStates.set(target, { originalText: target.innerHTML });	
+					selectorStates.set(target, { originalText: target.innerHTML });
 				}
 				if (!target.disabled) {
 					target.disabled = true;
@@ -133,7 +89,7 @@
 				}
 			} else {
 				return false;
-			}		
+			}
 		};
 	})();
 
@@ -247,7 +203,7 @@
 		event.preventDefault();
 		let clanTag = callHistoriqueClanWar.getAttribute("data-clan-tag");
 		if (!clanTag) {
-			console.warn("Clan tag manquant");	
+			console.warn("Clan tag manquant");
 			return true;
 		}
 		let allCheckedHCW = document.querySelectorAll('input[type="checkbox"][name="historiqueCheckbox"]:checked');
@@ -291,7 +247,7 @@
 			});
 		return true;
 	}
-
+/*
 	document.addEventListener("DOMContentLoaded", function () {
 		let form = document.getElementById("nom-clan-form");
 		let submitButton = form.querySelector("button[type='submit']");
@@ -351,6 +307,6 @@
 					App.toggleDisabledButton(submitButton);
 				});
 		});
-	});
+	}); */
 </script>
 {% endblock %}

@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use App\Service\ClashRoyaleApi;
 use App\Service\ClashRoyale\ClashRoyaleResponseProcessor;
 use App\Service\ClashRoyale\ClashRoyaleWarTools;
+use App\Dto\ClashRoyale\Clan;
 
 class ClanStatsService
 {
@@ -21,45 +22,43 @@ class ClanStatsService
         $this->apiClashRoyale = $apiClashRoyale;
         $this->clashRoyaleRespProcess = $clashRoyaleRespProcess;
         $this->clashRoyaleWarTools = $clashRoyaleWarTools;
-        $this->logger->info("Initialisation de : 'class ClanStatsService'.");
+        $this->logger->info("Initialisation de : class 'ClanStatsService'.");
     }
 
     public function getSearchClanName(array $params): array
     {
-        $this->logger->info("Lancement de : 'function getSearchClanName'.");
+        $this->logger->info("Lancement de : class 'ClanStatsService' function 'getSearchClanName'.");
         $apiResponse = $this->apiClashRoyale->searchClans($params);
         return $this->clashRoyaleRespProcess->processSearchClansResponse($apiResponse);
     }
 
+    public function getClan(string $tag): Clan
+    {
+        $this->logger->info("Lancement de : class 'ClanStatsService' function 'getClan'.");
+        $apiResponse = $this->apiClashRoyale->getClan($tag);
+        return $this->clashRoyaleRespProcess->processGetClanResponse($apiResponse);
+    }
+
     public function getRiverRaceLog(string $tag): array
     {
-        $this->logger->info("Lancement de : 'function getRiverRaceLog'.");
+        $this->logger->info("Lancement de : class 'ClanStatsService' function 'getRiverRaceLog'.");
         $apiResponse = $this->apiClashRoyale->getRiverRaceLog($tag);
-        $riverRaceLogs = $this->clashRoyaleRespProcess->processGetRiverRaceLogResponse($apiResponse);
-        
-        $apiResponse = $this->apiClashRoyale->getClan($tag);
-        $clan = $this->clashRoyaleRespProcess->processGetClanResponse($apiResponse);
-        return [
-            "riverRaceLogs" => $riverRaceLogs,
-            "clan" => $clan
-        ];
+        return $this->clashRoyaleRespProcess->processGetRiverRaceLogResponse($apiResponse);
     }
 
     /**
      * Récupère l'historique des guerres de clan avec les statistiques des joueurs
      */
-    public function getHistoriqueClanWar(string $clanTag , array $warsSelected): array
+    public function getHistoriqueClanWar(string $clanTag, array $warsSelected): array
     {
-        $this->logger->info("Lancement de : 'function getHistoriqueClanWar'.");
+        $this->logger->info("Lancement de : class 'ClanStatsService' function 'getHistoriqueClanWar'.");
 
-        $apiResponse = $this->apiClashRoyale->getRiverRaceLog($clanTag);
-        $riverRaceLogs = $this->clashRoyaleRespProcess->processGetRiverRaceLogResponse($apiResponse);
+        $riverRaceLogs = $this->getRiverRaceLog($clanTag);
         $warsSelected = $this->clashRoyaleWarTools->processGetWarsSelected($warsSelected, $riverRaceLogs);
         $warsSelected = $this->clashRoyaleWarTools->processGetWarsByClan($clanTag, $warsSelected);
-        
-        $apiResponse = $this->apiClashRoyale->getClan($clanTag);
-        $currentClan = $this->clashRoyaleRespProcess->processGetClanResponse($apiResponse);
+
+        $currentClan = $this->getClan($clanTag);
         $warsPlayersStats = $this->clashRoyaleWarTools->processGetWarsPlayersStats($currentClan, $warsSelected);
-        return $warsPlayersStats ;
+        return $warsPlayersStats;
     }
 }

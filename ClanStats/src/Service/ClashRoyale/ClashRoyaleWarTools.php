@@ -17,12 +17,12 @@ class ClashRoyaleWarTools
     {
         $this->logger = $logger;
         $this->serializer = $serializer;
-        $this->logger->info("Initialisation de : 'class ClashRoyaleWarTools'.");
+        $this->logger->info("Initialisation de : class 'ClashRoyaleWarTools'.");
     }
 
     public function processGetWarsSelected(array $warsSelected, array $riverRaceLog)
     {
-        $this->logger->info("Lancement de : 'function processGetWarsSelected'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsSelected'.");
         $warsFiltered = [];
         foreach ($riverRaceLog as $riverRace) {
             if (in_array($riverRace->getSeasonId() . "_" . $riverRace->getSectionIndex(), $warsSelected)) {
@@ -34,7 +34,7 @@ class ClashRoyaleWarTools
 
     public function processGetWarsByClan(string $clanTag, array $riverRaceLog)
     {
-        $this->logger->info("Lancement de : 'function processGetWarsByClan'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsByClan'.");
         $warsFiltered = [];
         foreach ($riverRaceLog as $riverRace) {
             foreach ($riverRace->getClans() as $clan) {
@@ -59,7 +59,7 @@ class ClashRoyaleWarTools
 
     public function processGetWarsPlayersStats(Clan $currentClan, array $riverRaceLog)
     {
-        $this->logger->info("Lancement de : 'function processGetWarsPlayersStats'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsPlayersStats'.");
         $playerTags = array_map(function ($player) {
             return $player->getTag();
         }, $currentClan->getMembersList());
@@ -97,10 +97,10 @@ class ClashRoyaleWarTools
             $playersStats[$player]["averageWarsBoatAttacks"] = round($playersStats[$player]["totalWarsBoatAttacks"] / $playersStats[$player]["totalWarsParticipated"], 4);
             $playersStats[$player]["averageWarsDecksUsed"] = round($playersStats[$player]["totalWarsDecksUsed"] / $playersStats[$player]["totalWarsParticipated"], 4);
         }
-        $activeMembers = array_filter($playersStats, function($player) {
+        $activeMembers = array_filter($playersStats, function ($player) {
             return $player['currentPlayer'] === true;
         });
-        $exMembers = array_filter($playersStats, function($player) {
+        $exMembers = array_filter($playersStats, function ($player) {
             return $player['currentPlayer'] === false;
         });
         return [

@@ -10,8 +10,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use App\Form\ClanNameType;
+
+use App\Dto\React\ClanSearchForm;
+
+
 use App\Service\ClanStatsService;
 
 final class ClanStatsController extends AbstractController
@@ -19,12 +24,16 @@ final class ClanStatsController extends AbstractController
     private LoggerInterface $logger;
     private ClanStatsService $clanStatsService;
     private SerializerInterface $serializer;
+    private NormalizerInterface $normalizer;
+    private ValidatorInterface $validator;
 
-    public function __construct(ClanStatsService $clanStatsService, LoggerInterface $logger, SerializerInterface $serializer)
+    public function __construct(ClanStatsService $clanStatsService, LoggerInterface $logger, SerializerInterface $serializer, NormalizerInterface $normalizer, ValidatorInterface $validator)
     {
         $this->logger = $logger;
         $this->clanStatsService = $clanStatsService;
         $this->serializer = $serializer;
+        $this->normalizer = $normalizer;
+        $this->validator = $validator;
     }
 
     #[Route("/clanstats", name: "app_clan_stats")]
@@ -39,61 +48,75 @@ final class ClanStatsController extends AbstractController
     #[Route("/clanstats/search", name: "app_clan_stats_search", methods: ["POST"])]
     public function searchClanName(Request $request): JsonResponse
     {
-        $form = $this->createForm(ClanNameType::class);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $this->logger->info("function 'searchClanName' pour '" . $data["nomClan"] . "'.");
+        //TODO Mise en place du DTO FORM REAct
+        $data = json_decode($request->getContent(), true);
+        $this->logger->info("class 'ClanStatsController' function 'searchClanName' .");
+
+        try {
+            $dto = $this->serializer->deserialize($request->getContent(), ClanSearchForm::class, "json");
+            $errors = $this->validator->validate($dto);
+
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                }
+                return new JsonResponse([
+                    'success' => false,
+                    'errors' => $errorMessages
+                ], 422);
+            }
             $params = [
-                "name" => $data["nomClan"],
-                "minMembers" => $data["minMembers"],
-                "maxMembers" => $data["maxMembers"],
-                "minScore" => $data["minScore"]
+                "name" => $dto->getNomClan(),
+                "minMembers" => $dto->getMinMembers(),
+                "maxMembers" => $dto->getMaxMembers(),
+                "minScore" => $dto->getMinScore()
             ];
+
+            $this->logger->info("Recherche pour le clan: '" . $dto->getNomClan() . "'", $params);
             $clans = $this->clanStatsService->getSearchClanName($params);
-            $serializedClans = $this->serializer->serialize($clans, 'json', ['groups' => 'ajaxed']);
-            $htmlSearchClans = $this->renderView("clan_stats/search-clan-response.html.twig", [
-                "clans" => $clans
-            ]);
+            $normalizedClans = $this->normalizer->normalize($clans, null, ['groups' => 'ajaxed']);
+
             return new JsonResponse([
                 "success" => true,
-                "clans" => $serializedClans,
-                "htmlSearchClans" => $htmlSearchClans
-            ], 200);
+                "clans" => $normalizedClans
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                "success" => false,
+                "errors" => ["general" => $e->getMessage()]
+            ], 500);
         }
-        $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $fieldName = $error->getOrigin()->getName();
-            $message = $error->getMessage();
-            $errors[$fieldName] = $message;
+    }
+    #[Route("/clanstats/clan", name: "app_clan_stats_clan", methods: ["POST"])]
+    public function clan(Request $request): JsonResponse
+    {
+        if ($request->isXmlHttpRequest()) {
+            $clan = json_decode($request->getContent(), true) ?? null;
+            $this->logger->info("class 'ClanStatsController' function 'clan' pour '" . $clan["tag"] . "'.");
+            $clan = $this->clanStatsService->getClan($clan["tag"]);
+            $normalizedClans = $this->normalizer->normalize($clan, null, ['groups' => 'ajaxed']);
+            return new JsonResponse([
+                "success" => true,
+                "clan" => $normalizedClans
+            ]);
         }
         return new JsonResponse([
             "success" => false,
-            "errors" => $errors,
             "message" => "Une erreur s'est produite"
         ], 400);
     }
-
     #[Route("/clanstats/riverRaceLog", name: "app_clan_stats_riverRaceLog", methods: ["POST"])]
     public function riverRaceLog(Request $request): JsonResponse
     {
         if ($request->isXmlHttpRequest()) {
-            $tag = json_decode($request->getContent(), true) ?? null;
-            $this->logger->info("function 'riverRaceLog' pour '" . $tag . "'.");
-            $result = $this->clanStatsService->getRiverRaceLog($tag);
-            $serializedResult = $this->serializer->serialize($result, 'json', ['groups' => 'ajaxed']);
-            $htmlRiverRaceLogs = $this->renderView("clan_stats/river-race-log-response.html.twig", [
-                "riverRaceLogs" => $result["riverRaceLogs"],
-                "tag" => $tag
-            ]);
-            $htmlClan = $this->renderView("clan_stats/clan-info-response.html.twig", [
-                "clan" => $result["clan"]
-            ]);
+            $clan = json_decode($request->getContent(), true) ?? null;
+            $this->logger->info("class 'ClanStatsController' function 'riverRaceLog' pour '" . $clan["tag"] . "'.");
+            $riverRaceLogs = $this->clanStatsService->getRiverRaceLog($clan["tag"]);
+            $normalizedRiverRaceLogs = $this->normalizer->normalize($riverRaceLogs, null, ['groups' => 'ajaxed']);
             return new JsonResponse([
                 "success" => true,
-                "htmlClan" => $htmlClan,
-                "htmlRiverRaceLogs" => $htmlRiverRaceLogs,
-                "serializedResult" => $serializedResult
+                "riverRaceLogs" => $normalizedRiverRaceLogs
             ]);
         }
         return new JsonResponse([
@@ -107,22 +130,16 @@ final class ClanStatsController extends AbstractController
     {
         if ($request->isXmlHttpRequest()) {
             $data = json_decode($request->getContent(), true) ?? null;
-            $this->logger->info("function 'historiqueClanWar'");
+            $this->logger->info("class 'ClanStatsController' function 'historiqueClanWar'");
             $result = $this->clanStatsService->getHistoriqueClanWar($data["clanTag"], $data["warsSelected"]);
-            $serializedwarsPlayersStats = $this->serializer->serialize($result, 'json', ['groups' => 'ajaxed']);
-            $htmlHistorique = $this->renderView("clan_stats/historique-clan-war.html.twig", [
-                "Members" => $result["activeMembers"],
-                "activeMembers" => true,
-            ]);
-            $htmlHistoriqueEx = $this->renderView("clan_stats/historique-clan-war.html.twig", [
-                "Members" => $result["exMembers"],
-                "activeMembers" => false,
-            ]);
+
+            $normalizedActiveMembers = $this->normalizer->normalize($result["activeMembers"], null, ['groups' => 'ajaxed']);
+            $normalizedExMembers = $this->normalizer->normalize($result["exMembers"], null, ['groups' => 'ajaxed']);
+
             return new JsonResponse([
                 "success" => true,
-                "htmlHistorique" => $htmlHistorique,
-                "htmlHistoriqueEx" => $htmlHistoriqueEx,
-                "serializedwarsPlayersStats" => $serializedwarsPlayersStats
+                "activeMembers" => $normalizedActiveMembers,
+                "exMembers" => $normalizedExMembers
             ]);
         }
         return new JsonResponse([

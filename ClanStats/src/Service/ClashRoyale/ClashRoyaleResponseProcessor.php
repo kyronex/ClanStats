@@ -18,12 +18,12 @@ class ClashRoyaleResponseProcessor
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
-        $this->logger->info("Initialisation de : 'class ClashRoyaleResponseProcessor'.");
+        $this->logger->info("Initialisation de : class 'ClashRoyaleResponseProcessor'.");
     }
 
     public function processSearchClansResponse(array $apiResponse): array
     {
-        $this->logger->info("Lancement de : 'function processSearchClansResponse'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleResponseProcessor' function 'processSearchClansResponse'.");
         $clans = [];
         if (isset($apiResponse["items"]) && is_array($apiResponse["items"])) {
             foreach ($apiResponse["items"] as $clanData) {
@@ -35,7 +35,7 @@ class ClashRoyaleResponseProcessor
 
     public function processGetClanResponse(array $apiResponse): Clan
     {
-        $this->logger->info("Lancement de : 'function processGetClanResponse'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleResponseProcessor' function 'processGetClanResponse'.");
         $clan = [];
         $clan = new Clan($apiResponse);
         return $clan;
@@ -43,7 +43,7 @@ class ClashRoyaleResponseProcessor
 
     public function processGetClanMembersResponse(array $apiResponse): array
     {
-        $this->logger->info("Lancement de : 'function processGetClanMembersResponse'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleResponseProcessor' function 'processGetClanMembersResponse'.");
         $clanMembers = [];
         if (isset($apiResponse["items"]) && is_array($apiResponse["items"])) {
             foreach ($apiResponse["items"] as $ClanMemberData) {
@@ -55,7 +55,7 @@ class ClashRoyaleResponseProcessor
 
     public function processGetRiverRaceLogResponse(array $apiResponse): array
     {
-        $this->logger->info("Lancement de : 'function processGetRiverRaceLogResponse'.");
+        $this->logger->info("Lancement de : class 'ClashRoyaleResponseProcessor' function 'processGetRiverRaceLogResponse'.");
         //$this->logger->info(json_encode($apiResponse));
         $riverRaceLog = [];
         if (isset($apiResponse["items"]) && is_array($apiResponse["items"])) {
