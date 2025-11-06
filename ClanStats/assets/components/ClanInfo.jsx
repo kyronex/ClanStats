@@ -1,10 +1,33 @@
 import { useClanInfo } from "../hooks";
+import { useTableSort } from "../hooks";
+import { BoutonSort } from "../hooks";
+
 import React, { useState, useEffect } from "react";
 
 function ClanInfo({ clan = {} }) {
-  const [clanData, setClanData] = useState(null);
+  const [clanData, setClanData] = useState({
+    membersList: [],
+  });
   const [showClanMembers, setShowClanMembers] = useState(false);
   const { clanInfo, isLoading, errors, hasErrors, clearErrors } = useClanInfo();
+
+  const [keysSort] = useState({
+    name: "Nom",
+    tag: "Tag",
+    expLevel: "Niveau",
+    trophies: "Trophées",
+    role: "Rôle",
+    clanRank: "Rang",
+    previousClanRank: "Rang Précédent",
+    donations: "Dons",
+    donationsReceived: "Dons reçus",
+    lastSeen: "Dernière Connexion",
+  });
+
+  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
+    keysSort,
+    clanData.membersList
+  );
 
   useEffect(() => {
     let isCancelled = false;
@@ -100,21 +123,22 @@ function ClanInfo({ clan = {} }) {
                     <table className="table table-sm members-table">
                       <thead>
                         <tr>
-                          <th>Nom</th>
-                          <th>Tag</th>
-                          <th>Niveau</th>
-                          <th>Trophées</th>
-                          <th>Rôle</th>
-                          <th>Rang</th>
-                          <th>Rang Précédent</th>
-                          <th>Dons</th>
-                          <th>Dons reçus</th>
-                          <th>Dernière Connexion</th>
+                          {Object.entries(keysSort).map(([key, label]) => (
+                            <th key={key}>
+                              {label} <br />
+                              <BoutonSort
+                                cle={key}
+                                handleEnabledSorts={handleEnabledSorts}
+                                handleWaySorts={handleWaySorts}
+                                tabConfSort={tabConfSort}
+                              />
+                            </th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {clanData.membersList?.map((member) => (
-                          <tr key={member.tag}>
+                        {sortedData?.map((member, index) => (
+                          <tr key={`${member.tag}-${index}`}>
                             <td>{member.name}</td>
                             <td>{member.tag}</td>
                             <td>{member.expLevel}</td>

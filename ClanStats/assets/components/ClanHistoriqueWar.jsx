@@ -1,10 +1,29 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import { useToggleSet } from "../hooks";
+import { useTableSort } from "../hooks";
+import { BoutonSort } from "../hooks";
 
-// TODO : CUSTOM HOOK pour toggle Set handleSelectedHistory , handleShowedRow , handleShowedMembers
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 
 function ClanHistoriqueWar({ members = [], membersClan = [] }) {
   const componentRef = useRef(null);
   const [showedMembers, setShowedMembers] = useState(new Set());
+  const hookTogSet = useToggleSet();
+  const [keysSort] = useState({
+    tag: "Tag",
+    name: "Name",
+    totalWarsParticipated: "Participations Totales",
+    totalWarsFame: "Total Fame",
+    totalWarsBoatAttacks: "Total Boats Attacked",
+    totalWarsDecksUsed: "Total Decks Used",
+    averageWarsFame: "Average Fame",
+    averageWarsBoatAttacks: "Average Boats Attacked",
+    averageWarsDecksUsed: "Average Decks Used",
+  });
+
+  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
+    keysSort,
+    members
+  );
 
   useEffect(() => {
     if (componentRef.current) {
@@ -13,13 +32,14 @@ function ClanHistoriqueWar({ members = [], membersClan = [] }) {
     }
   }, []);
 
-  const handleShowedMembers = useCallback((id) => {
-    setShowedMembers((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-      return newSet;
-    });
-  }, []);
+  const handleShowedMembers = useCallback(
+    (id) => {
+      setShowedMembers((prev) => {
+        return hookTogSet.toggle(prev, id);
+      });
+    },
+    [hookTogSet]
+  );
 
   return (
     <div ref={componentRef} tabIndex={-1}>
@@ -34,21 +54,27 @@ function ClanHistoriqueWar({ members = [], membersClan = [] }) {
             </th>
           </tr>
           <tr>
-            <th>Name</th>
-            <th>Participations Totales</th>
-            <th>Total Fame</th>
-            <th>Total Boats Attacked</th>
-            <th>Total Decks Used</th>
-            <th>Average Fame</th>
-            <th>Average Boats Attacked</th>
-            <th>Average Decks Used</th>
-            <th></th>
+            {Object.entries(keysSort).map(([key, label]) => (
+              <th key={key}>
+                {label} <br />
+                <BoutonSort cle={key} handleEnabledSorts={handleEnabledSorts} handleWaySorts={handleWaySorts} tabConfSort={tabConfSort} />
+              </th>
+            ))}
+            <th>
+              <button onClick={handleResetSorts}>Reset Sort</button>
+              {/* <button onClick={handleShowTabConfSorts}>View</button> */}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {members?.map((member) => {
+          {sortedData?.map((member, index) => {
             return (
-              <MembersTable key={member.tag} member={member} handleShowedMembers={handleShowedMembers} showedMembers={showedMembers} />
+              <MembersTable
+                key={`${member.tag}-${index}`}
+                member={member}
+                handleShowedMembers={handleShowedMembers}
+                showedMembers={showedMembers}
+              />
             );
           })}
         </tbody>
@@ -62,6 +88,7 @@ const MembersTable = memo(function MembersTable({ member, handleShowedMembers, s
   return (
     <React.Fragment>
       <tr>
+        <td>{member.tag}</td>
         <td>{member.name}</td>
         <td>{member.totalWarsParticipated}</td>
         <td>{member.totalWarsFame}</td>
@@ -96,8 +123,8 @@ const MemberTable = memo(function MemberTable({ member }) {
             </tr>
           </thead>
           <tbody>
-            {member.wars?.map((war) => {
-              return <WarItem key={war.warId} war={war} />;
+            {member.wars?.map((war, index) => {
+              return <WarItem key={`${war.warId}-${index}`} war={war} />;
             })}
           </tbody>
         </table>

@@ -1,12 +1,15 @@
 import { useHistoriqueClanWar } from "../hooks";
 import { useClanRiverRaceLog } from "../hooks";
+import { useToggleSet } from "../hooks";
+import { useTableSort } from "../hooks";
+import { BoutonSort } from "../hooks";
 
 import React, { useState, useEffect, useCallback, memo } from "react";
 
-// TODO : CUSTOM HOOK pour toggle Set handleSelectedHistory , handleShowedRow , handleShowedMembers
 function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers }) {
   const hookHCW = useHistoriqueClanWar();
   const hookCRRL = useClanRiverRaceLog();
+  const hookTS = useToggleSet();
 
   const [riverRaceLogData, setRiverRaceLogData] = useState(null);
 
@@ -23,27 +26,29 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers }) {
       setSelectAll(false);
       setWarsSelected(new Set());
     } else {
-      const allIds = riverRaceLogData.map((item) => `${item.seasonId}_${item.sectionIndex}`);
+      const allIds = riverRaceLogData.map((item, index) => `${item.seasonId}_${item.sectionIndex}-${index}`);
       setSelectAll(true);
       setWarsSelected(new Set(allIds));
     }
   };
 
-  const handleSelectedHistory = useCallback((id) => {
-    setWarsSelected((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-      return newSet;
-    });
-  }, []);
+  const handleSelectedHistory = useCallback(
+    (id) => {
+      setWarsSelected((prev) => {
+        return hookTS.toggle(prev, id);
+      });
+    },
+    [hookTS]
+  );
 
-  const handleShowedRow = useCallback((id) => {
-    setShowedRow((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-      return newSet;
-    });
-  }, []);
+  const handleShowedRow = useCallback(
+    (id) => {
+      setShowedRow((prev) => {
+        return hookTS.toggle(prev, id);
+      });
+    },
+    [hookTS]
+  );
 
   useEffect(() => {
     if (riverRaceLogData && riverRaceLogData.length === warsSelected.size) {
@@ -120,8 +125,8 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers }) {
               </tr>
             </thead>
             <tbody>
-              {riverRaceLogData?.map((riverRaceLog) => {
-                const rowId = `${riverRaceLog.seasonId}_${riverRaceLog.sectionIndex}`;
+              {riverRaceLogData?.map((riverRaceLog, index) => {
+                const rowId = `${riverRaceLog.seasonId}_${riverRaceLog.sectionIndex}-${index}`;
                 return (
                   <RiverRaceLog
                     key={rowId}
@@ -171,26 +176,40 @@ const RiverRaceLog = memo(function RiverRaceLog({ riverRaceLog, rowId, showedRow
 });
 
 const TableClans = memo(function TableClans({ riverRaceLog, rowId, handleShowedRow, showedRow }) {
+  const [keysSort] = useState({
+    name: "Nom",
+    tag: "Tag",
+    rank: "Rank",
+    trophyChange: "Trophy Change",
+    fame: "Fame",
+    clanScore: "Clan Score",
+    finishTime: "Finish Time",
+    badgeId: "Badge Id",
+  });
+
+  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
+    keysSort,
+    riverRaceLog.clans
+  );
+
   return (
     <tr>
       <td colSpan="5">
         <table className="table table-sm clans-table">
           <thead>
             <tr>
-              <th></th>
-              <th>Name</th>
-              <th>Tag</th>
-              <th>Rank</th>
-              <th>Trophy Change</th>
-              <th>Fame</th>
-              <th>Clan Score</th>
-              <th>Finish Time</th>
-              <th>Badge Id</th>
+              <th>plop</th>
+              {Object.entries(keysSort).map(([key, label]) => (
+                <th key={key}>
+                  {label} <br />
+                  <BoutonSort cle={key} handleEnabledSorts={handleEnabledSorts} handleWaySorts={handleWaySorts} tabConfSort={tabConfSort} />
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {riverRaceLog.clans?.map((clan) => {
-              const rowIdClan = `${rowId}_${clan.tag}`;
+            {sortedData?.map((clan, index) => {
+              const rowIdClan = `${rowId}_${clan.tag}-${index}`;
               return (
                 <TableClan key={rowIdClan} clan={clan} rowIdClan={rowIdClan} handleShowedRow={handleShowedRow} showedRow={showedRow} />
               );
@@ -227,22 +246,36 @@ const TableClan = memo(function TableClan({ clan, rowIdClan, handleShowedRow, sh
 });
 
 const TableParticipants = memo(function TableParticipants({ participants, rowIdClan }) {
+  const [keysSort] = useState({
+    name: "Nom",
+    tag: "Tag",
+    fame: "Fame",
+    boatAttacks: "Boat Attacks",
+    decksUsed: "Decks Used",
+  });
+
+  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
+    keysSort,
+    participants
+  );
+
   return (
     <tr>
       <td colSpan="9">
         <table className="table table-sm">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Tag</th>
-              <th>Fame</th>
-              <th>Boat Attacks</th>
-              <th>Decks Used</th>
+              {Object.entries(keysSort).map(([key, label]) => (
+                <th key={key}>
+                  {label} <br />
+                  <BoutonSort cle={key} handleEnabledSorts={handleEnabledSorts} handleWaySorts={handleWaySorts} tabConfSort={tabConfSort} />
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {participants?.map((participant) => {
-              const rowIdClanPlayer = `${rowIdClan}_${participant.tag}`;
+            {sortedData?.map((participant, index) => {
+              const rowIdClanPlayer = `${rowIdClan}_${participant.tag}-${index}`;
               return <ParticipantItem key={rowIdClanPlayer} participant={participant} />;
             })}
           </tbody>

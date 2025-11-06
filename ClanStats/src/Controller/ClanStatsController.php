@@ -48,7 +48,6 @@ final class ClanStatsController extends AbstractController
     #[Route("/clanstats/search", name: "app_clan_stats_search", methods: ["POST"])]
     public function searchClanName(Request $request): JsonResponse
     {
-        //TODO Mise en place du DTO FORM REAct
         $data = json_decode($request->getContent(), true);
         $this->logger->info("class 'ClanStatsController' function 'searchClanName' .");
 
