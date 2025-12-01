@@ -1,6 +1,5 @@
 <?php
 
-// src/Service/ClashRoyale/ClashRoyaleResponseProcessor.php
 namespace App\Service\ClashRoyale;
 
 use App\Dto\ClashRoyale\Search\Clan as SearchClan;

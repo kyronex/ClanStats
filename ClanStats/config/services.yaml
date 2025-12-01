@@ -4,30 +4,55 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    clash_royale.api_key: '%env(CLASH_ROYAL_API_KEY)%'
-    clash_royale.base_url: '%env(CLASH_ROYALE_API_BASE_URL)%'
-    clash_royale.clan.min_member: '%env(CLASH_ROYALE_MIN_MEMBERS_SEARCH)%'
-    clash_royale.clan.max_member: '%env(CLASH_ROYALE_MAX_MEMBERS_SEARCH)%'
-    clash_royale.clan.min_score: '%env(CLASH_ROYALE_MIN_SCORE_SEARCH)%'
+  clash_royale.api_key: "%env(CLASH_ROYAL_API_KEY)%"
+  clash_royale.base_url: "%env(CLASH_ROYALE_API_BASE_URL)%"
+  clash_royale.clan.min_member: "%env(CLASH_ROYALE_MIN_MEMBERS_SEARCH)%"
+  clash_royale.clan.max_member: "%env(CLASH_ROYALE_MAX_MEMBERS_SEARCH)%"
+  clash_royale.clan.min_score: "%env(CLASH_ROYALE_MIN_SCORE_SEARCH)%"
+
+  clash_royale.tools.dirs:
+    task: "%env(CLASH_ROYAL_TOOLS_DIR_TASK)%"
+    taskErr: "%env(CLASH_ROYAL_TOOLS_DIR_TASKERR)%"
+    taskSolved: "%env(CLASH_ROYAL_TOOLS_DIR_TASKSOLVED)%"
+
+  clash_royale.tools.routes:
+    statsHistoriqueClanWar: "/clanstats/statsHistoriqueClanWar"
+    test: "/clanstats/test"
+
+  clash_royale.score.init_continuity: "%env(CLASH_ROYALE_SCORE_INIT_CONTINUITY)%"
+  clash_royale.score.evo_continuity: "%env(CLASH_ROYALE_SCORE_EVO_CONTINUITY)%"
+  clash_royale.score.decay_continuity: "%env(CLASH_ROYALE_SCORE_DECAY_CONTINUITY)%"
+
+  clash_royale.score.multiplier_max: "%env(CLASH_ROYALE_SCORE_MULTIPLIER_MAX)%"
+  clash_royale.score.multiplier_min: "%env(CLASH_ROYALE_SCORE_MULTIPLIER_MIN)%"
+
+  clash_royale.score.init_temporality: "%env(CLASH_ROYALE_SCORE_INIT_TEMPORALITY)%"
+  clash_royale.score.evo_temporality: "%env(CLASH_ROYALE_SCORE_EVO_TEMPORALITY)%"
+
 services:
-    # default configuration for services in *this* file
-    _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
-    App\:
-        resource: '../src/'
-        exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Entity/'
-            - '../src/Kernel.php'
+  # makes classes in src/ available to be used as services
+  # this creates a service per class whose id is the fully-qualified class name
+  App\:
+    resource: "../src/"
+    exclude:
+      - "../src/DependencyInjection/"
+      - "../src/Entity/"
+      - "../src/Kernel.php"
 
-    # add more service definitions when explicit configuration is needed
+  # add more service definitions when explicit configuration is needed
 
-    App\Service\ClashRoyaleApi:
-        arguments:
-            $apiKey: '%clash_royale.api_key%'
-            $baseUrl: '%clash_royale.base_url%'
-    # please note that last definitions always *replace* previous ones
+  App\Service\ClanStatsTools:
+    arguments:
+      $allowedRoutes: "%clash_royale.tools.routes%"
+      $allowedDirs: "%clash_royale.tools.dirs%"
+
+  App\Service\ClashRoyaleApi:
+    arguments:
+      $apiKey: "%clash_royale.api_key%"
+      $baseUrl: "%clash_royale.base_url%"
+  # please note that last definitions always *replace* previous ones

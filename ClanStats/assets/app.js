@@ -23,12 +23,14 @@ function ClanStatsContainer() {
   const [selectedClan, setSelectedClan] = useState(null);
   const [activeMembers, setActiveMembers] = useState([]);
   const [exMembers, setExMembers] = useState([]);
+  const [taskId, setTaskId] = useState([]);
 
   useEffect(() => {
     console.log("⭐ useEffect app.js [activeMembers, exMembers]");
     console.log("📋 activeMembers:", activeMembers);
     console.log("📋 exMembers:", exMembers);
-  }, [activeMembers, exMembers]);
+    console.log("📋 taskId:", taskId);
+  }, [activeMembers, exMembers, taskId]);
 
   return (
     <div>
@@ -39,8 +41,7 @@ function ClanStatsContainer() {
       {selectedClan && (
         <div>
           <ClanInfo clan={selectedClan} />
-
-          <ClanRiverRaceLog clan={selectedClan} activeMembers={setActiveMembers} exMembers={setExMembers} />
+          <ClanRiverRaceLog clan={selectedClan} activeMembers={setActiveMembers} exMembers={setExMembers} taskId={setTaskId} />
         </div>
       )}
 

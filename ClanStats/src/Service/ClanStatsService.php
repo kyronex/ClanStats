@@ -1,27 +1,33 @@
 <?php
 
-// src/Service/ClanStatsService.php
 namespace App\Service;
 
 use Psr\Log\LoggerInterface;
+use App\Service\ClanStatsTools;
 use App\Service\ClashRoyaleApi;
 use App\Service\ClashRoyale\ClashRoyaleResponseProcessor;
 use App\Service\ClashRoyale\ClashRoyaleWarTools;
+use App\Service\ClashRoyale\Analysis\PlayersStats;
+
 use App\Dto\ClashRoyale\Clan;
 
 class ClanStatsService
 {
+    private ClanStatsTools $clanStatsTools;
     private ClashRoyaleApi $apiClashRoyale;
     private ClashRoyaleResponseProcessor $clashRoyaleRespProcess;
     private ClashRoyaleWarTools $clashRoyaleWarTools;
+    private PlayersStats $playersStatsAnalysis;
     private LoggerInterface $logger;
 
-    public function __construct(ClashRoyaleApi $apiClashRoyale, ClashRoyaleResponseProcessor $clashRoyaleRespProcess, ClashRoyaleWarTools $clashRoyaleWarTools, LoggerInterface $logger)
+    public function __construct(PlayersStats $playersStatsAnalysis, ClanStatsTools $clanStatsTools, ClashRoyaleApi $apiClashRoyale, ClashRoyaleResponseProcessor $clashRoyaleRespProcess, ClashRoyaleWarTools $clashRoyaleWarTools, LoggerInterface $logger)
     {
         $this->logger = $logger;
+        $this->clanStatsTools = $clanStatsTools;
         $this->apiClashRoyale = $apiClashRoyale;
         $this->clashRoyaleRespProcess = $clashRoyaleRespProcess;
         $this->clashRoyaleWarTools = $clashRoyaleWarTools;
+        $this->playersStatsAnalysis = $playersStatsAnalysis;
         $this->logger->info("Initialisation de : class 'ClanStatsService'.");
     }
 
@@ -60,5 +66,21 @@ class ClanStatsService
         $currentClan = $this->getClan($clanTag);
         $warsPlayersStats = $this->clashRoyaleWarTools->processGetWarsPlayersStats($currentClan, $warsSelected);
         return $warsPlayersStats;
+    }
+
+    /**
+     * Compare l'historique des guerres de clan avec les statistiques des joueurs
+     */
+    public function getStatsHistoriqueClanWar(string $taskId)
+    {
+        $this->logger->info("Lancement de : class 'ClanStatsService' function 'getStatsHistoriqueClanWar'.");
+        $taskData = $this->clanStatsTools->loadTaskData($taskId);
+
+        if (!$taskData) {
+            return [];
+        }
+        $playersStats = array_merge($taskData["data"]["activeMembers"], $taskData["data"]["exMembers"]);
+        $statsHistoriqueClanWar = $this->clashRoyaleWarTools->processGetStatsHistoriqueClanWar($playersStats, $taskData["data"]["warsSelected"]);
+        return $this->playersStatsAnalysis->getPlayersAnalysisStats($statsHistoriqueClanWar["warsStats"], $statsHistoriqueClanWar["playersStats"]);
     }
 }

@@ -1,12 +1,15 @@
 <?php
 
-// src/Service/ClashRoyale/ClashRoyaleWarTools.php
 namespace App\Service\ClashRoyale;
 
 use Symfony\Component\Serializer\SerializerInterface;
 use App\Dto\ClashRoyale\RiverRace\RiverRaceLog;
 use App\Dto\ClashRoyale\Clan;
 use Psr\Log\LoggerInterface;
+
+use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
+use App\Dto\ClashRoyale\Analysis\War;
+use App\Dto\ClashRoyale\Analysis\WarStatsHistoriqueClanWar;
 
 class ClashRoyaleWarTools
 {
@@ -107,5 +110,73 @@ class ClashRoyaleWarTools
             "activeMembers" => $activeMembers,
             "exMembers" => $exMembers
         ];
+    }
+
+    public function processGetStatsHistoriqueClanWar(array $playersStats, array $warsSelected): array
+    {
+        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetStatsHistoriqueClanWar'.");
+        $initWarStat = [
+            "reelMaxFame" => 1,
+            "reelMinFame" => PHP_INT_MAX,
+            "reelMinBoatAttacks" => PHP_INT_MAX,
+            "reelMaxBoatAttacks" => 1,
+            "reelMinDecksUsed" => PHP_INT_MAX,
+            "reelMaxDecksUsed" => 1,
+            "players" => []
+        ];
+
+        $warsStat = ["all" => $initWarStat];
+        foreach ($warsSelected as $key => $war) {
+            $warsStat[$war] = $initWarStat;
+        }
+
+        $listWars = [];
+        $playersDto = [];
+        foreach ($playersStats as $playerKey => $stats) {
+            foreach ($stats as $key => $value) {
+                if (preg_match('/^(\d+)_(\d+)$/', $key, $matches)) {
+                    if ($value["decksUsed"] > 0) {
+                        $warsStat = $this->updateReelWarStat($warsStat, $key, $value);
+                        $dataWar = array_merge($value, ["sessionId" => $key]);
+                        $listWars[$playerKey][$key] = new War($dataWar);
+                    }
+                }
+            }
+            if (isset($listWars[$playerKey])) {
+                $dataPlayer = array_merge(["warList" => $listWars[$playerKey]], ["tag" => $playerKey], ["name" => $stats["name"]], ["currentPlayer" => $stats["currentPlayer"]]);
+                $playersDto[$playerKey] = new PlayerStatsHistoriqueClanWar($dataPlayer);
+            }
+        }
+
+        $warsDto = [];
+        foreach ($warsStat as $key => $stat) {
+            $data = array_merge($stat, ["sessionId" => $key]);
+            $warsDto[$key] = new WarStatsHistoriqueClanWar($data);
+        }
+        $result = array_merge(["warsStats" => $warsDto], ["playersStats" =>  $playersDto]);
+        return $result;
+    }
+
+    private function updateReelWarStat(array $warStat, string $key, array $data): array
+    {
+        $targets = ["fame", "boatAttacks", "decksUsed"];
+        foreach ($targets as $target) {
+            if ($warStat[$key]["reelMax" . ucfirst($target)] < $data[$target]) {
+                $warStat[$key]["reelMax" . ucfirst($target)] = $data[$target];
+                if ($warStat["all"]["reelMax" . ucfirst($target)] < $data[$target]) {
+                    $warStat["all"]["reelMax" . ucfirst($target)] = $data[$target];
+                }
+            }
+            if ($warStat[$key]["reelMin" . ucfirst($target)] > $data[$target] && $data[$target] > 0) {
+                $warStat[$key]["reelMin" . ucfirst($target)] = $data[$target];
+                if ($warStat["all"]["reelMin" . ucfirst($target)] > $data[$target]) {
+                    $warStat["all"]["reelMin" . ucfirst($target)] = $data[$target];
+                }
+            }
+        }
+        if (!in_array($data["tag"], $warStat[$key]["players"])) {
+            $warStat[$key]["players"][] = $data["tag"];
+        }
+        return $warStat;
     }
 }

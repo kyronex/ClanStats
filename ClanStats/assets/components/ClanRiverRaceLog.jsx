@@ -6,7 +6,7 @@ import { BoutonSort } from "../hooks";
 
 import React, { useState, useEffect, useCallback, memo } from "react";
 
-function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers }) {
+function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
   const hookHCW = useHistoriqueClanWar();
   const hookCRRL = useClanRiverRaceLog();
   const hookTS = useToggleSet();
@@ -26,7 +26,7 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers }) {
       setSelectAll(false);
       setWarsSelected(new Set());
     } else {
-      const allIds = riverRaceLogData.map((item, index) => `${item.seasonId}_${item.sectionIndex}-${index}`);
+      const allIds = riverRaceLogData.map((item) => `${item.seasonId}_${item.sectionIndex}`);
       setSelectAll(true);
       setWarsSelected(new Set(allIds));
     }
@@ -64,7 +64,7 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers }) {
       console.warn({ general: "Veuillez choisir au moins une saison" });
       return;
     }
-    const result = await hookHCW.historiqueClanWar(clan, warsSelected, activeMembers, exMembers);
+    const result = await hookHCW.historiqueClanWar(clan, warsSelected, activeMembers, exMembers, taskId);
     if (result.success) {
       console.log(`✅ Historique membres trouvés`);
       hookHCW.clearErrors();
@@ -125,8 +125,8 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers }) {
               </tr>
             </thead>
             <tbody>
-              {riverRaceLogData?.map((riverRaceLog, index) => {
-                const rowId = `${riverRaceLog.seasonId}_${riverRaceLog.sectionIndex}-${index}`;
+              {riverRaceLogData?.map((riverRaceLog) => {
+                const rowId = `${riverRaceLog.seasonId}_${riverRaceLog.sectionIndex}`;
                 return (
                   <RiverRaceLog
                     key={rowId}

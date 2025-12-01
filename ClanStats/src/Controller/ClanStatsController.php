@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Dto\ClashRoyale\RiverRace\Clan;
 use Psr\Log\LoggerInterface;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,28 +16,31 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use App\Form\ClanNameType;
 
 use App\Dto\React\ClanSearchForm;
-
-
 use App\Service\ClanStatsService;
+use App\Service\ClanStatsTools;
 
+
+// TODO fair PHPDOC GENERICS
 final class ClanStatsController extends AbstractController
 {
     private LoggerInterface $logger;
     private ClanStatsService $clanStatsService;
+    private ClanStatsTools $clanStatsTools;
     private SerializerInterface $serializer;
     private NormalizerInterface $normalizer;
     private ValidatorInterface $validator;
 
-    public function __construct(ClanStatsService $clanStatsService, LoggerInterface $logger, SerializerInterface $serializer, NormalizerInterface $normalizer, ValidatorInterface $validator)
+    public function __construct(ClanStatsTools $clanStatsTools, ClanStatsService $clanStatsService, LoggerInterface $logger, SerializerInterface $serializer, NormalizerInterface $normalizer, ValidatorInterface $validator)
     {
         $this->logger = $logger;
         $this->clanStatsService = $clanStatsService;
+        $this->clanStatsTools = $clanStatsTools;
         $this->serializer = $serializer;
         $this->normalizer = $normalizer;
         $this->validator = $validator;
     }
 
-    #[Route("/clanstats", name: "app_clan_stats")]
+    #[Route("/clanstats", name: "appClanStats")]
     public function index(): Response
     {
         $form = $this->createForm(ClanNameType::class);
@@ -45,12 +49,10 @@ final class ClanStatsController extends AbstractController
         ]);
     }
 
-    #[Route("/clanstats/search", name: "app_clan_stats_search", methods: ["POST"])]
+    #[Route("/clanstats/search", name: "appClanStats_search", methods: ["POST"])]
     public function searchClanName(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
         $this->logger->info("class 'ClanStatsController' function 'searchClanName' .");
-
         try {
             $dto = $this->serializer->deserialize($request->getContent(), ClanSearchForm::class, "json");
             $errors = $this->validator->validate($dto);
@@ -74,7 +76,7 @@ final class ClanStatsController extends AbstractController
 
             $this->logger->info("Recherche pour le clan: '" . $dto->getNomClan() . "'", $params);
             $clans = $this->clanStatsService->getSearchClanName($params);
-            $normalizedClans = $this->normalizer->normalize($clans, null, ['groups' => 'ajaxed']);
+            $normalizedClans = $this->normalizer->normalize($clans, null, ["groups" => "ajaxed"]);
 
             return new JsonResponse([
                 "success" => true,
@@ -87,14 +89,14 @@ final class ClanStatsController extends AbstractController
             ], 500);
         }
     }
-    #[Route("/clanstats/clan", name: "app_clan_stats_clan", methods: ["POST"])]
+    #[Route("/clanstats/clan", name: "appClanStats_clan", methods: ["POST"])]
     public function clan(Request $request): JsonResponse
     {
         if ($request->isXmlHttpRequest()) {
             $clan = json_decode($request->getContent(), true) ?? null;
             $this->logger->info("class 'ClanStatsController' function 'clan' pour '" . $clan["tag"] . "'.");
             $clan = $this->clanStatsService->getClan($clan["tag"]);
-            $normalizedClans = $this->normalizer->normalize($clan, null, ['groups' => 'ajaxed']);
+            $normalizedClans = $this->normalizer->normalize($clan, null, ["groups" => "ajaxed"]);
             return new JsonResponse([
                 "success" => true,
                 "clan" => $normalizedClans
@@ -105,14 +107,14 @@ final class ClanStatsController extends AbstractController
             "message" => "Une erreur s'est produite"
         ], 400);
     }
-    #[Route("/clanstats/riverRaceLog", name: "app_clan_stats_riverRaceLog", methods: ["POST"])]
+    #[Route("/clanstats/riverRaceLog", name: "appClanStats_riverRaceLog", methods: ["POST"])]
     public function riverRaceLog(Request $request): JsonResponse
     {
         if ($request->isXmlHttpRequest()) {
             $clan = json_decode($request->getContent(), true) ?? null;
             $this->logger->info("class 'ClanStatsController' function 'riverRaceLog' pour '" . $clan["tag"] . "'.");
             $riverRaceLogs = $this->clanStatsService->getRiverRaceLog($clan["tag"]);
-            $normalizedRiverRaceLogs = $this->normalizer->normalize($riverRaceLogs, null, ['groups' => 'ajaxed']);
+            $normalizedRiverRaceLogs = $this->normalizer->normalize($riverRaceLogs, null, ["groups" => "ajaxed"]);
             return new JsonResponse([
                 "success" => true,
                 "riverRaceLogs" => $normalizedRiverRaceLogs
@@ -123,8 +125,7 @@ final class ClanStatsController extends AbstractController
             "message" => "Une erreur s'est produite"
         ], 400);
     }
-
-    #[Route("/clanstats/historiqueClanWar", name: "app_clan_stats_historiqueClanWar", methods: ["POST"])]
+    #[Route("/clanstats/historiqueClanWar", name: "appClanStats_historiqueClanWar", methods: ["POST"])]
     public function historiqueClanWar(Request $request): JsonResponse
     {
         if ($request->isXmlHttpRequest()) {
@@ -132,18 +133,57 @@ final class ClanStatsController extends AbstractController
             $this->logger->info("class 'ClanStatsController' function 'historiqueClanWar'");
             $result = $this->clanStatsService->getHistoriqueClanWar($data["clanTag"], $data["warsSelected"]);
 
-            $normalizedActiveMembers = $this->normalizer->normalize($result["activeMembers"], null, ['groups' => 'ajaxed']);
-            $normalizedExMembers = $this->normalizer->normalize($result["exMembers"], null, ['groups' => 'ajaxed']);
+            $normalizedActiveMembers = $this->normalizer->normalize($result["activeMembers"], null, ["groups" => "ajaxed"]);
+            $normalizedExMembers = $this->normalizer->normalize($result["exMembers"], null, ["groups" => "ajaxed"]);
 
+            $dataTask = ["warsSelected" => $data["warsSelected"], "activeMembers" => $normalizedActiveMembers, "exMembers" => $normalizedExMembers];
+            $taskId = uniqid("dataTask_" . $data["clanTag"] . "_", true);
+            $fileResp = $this->clanStatsTools->saveTaskFile($taskId, $dataTask);
+            if ($fileResp) {
+                register_shutdown_function(function () use ($taskId) {
+                    $this->clanStatsTools->launchImmediateProcessing($taskId, "statsHistoriqueClanWar");
+                });
+            }
             return new JsonResponse([
                 "success" => true,
                 "activeMembers" => $normalizedActiveMembers,
-                "exMembers" => $normalizedExMembers
+                "exMembers" => $normalizedExMembers,
+                "taskId" => $taskId
             ]);
         }
         return new JsonResponse([
             "success" => false,
             "message" => "Une erreur s'est produite"
         ], 400);
+    }
+
+    #[Route("/clanstats/statsHistoriqueClanWar", name: "appClanStats_statsHistoriqueClanWar", methods: ["GET", "POST"])]
+    public function statsHistoriqueClanWar(Request $request): JsonResponse
+    {
+        $this->logger->info("class 'ClanStatsController' function 'statsHistoriqueClanWar'");
+        if (!$request->headers->get("X-Internal-Request")) {
+            return $this->json(["success" => false, "error" => "Forbidden"], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $taskId = $data["taskId"];
+        try {
+            $result = $this->clanStatsService->getStatsHistoriqueClanWar($taskId);
+            $normalizedResult = $this->normalizer->normalize($result, null, ["groups" => "ajaxed"]);
+            $this->clanStatsTools->updateTaskData($taskId, [
+                "status" => "solved",
+                "result" => $normalizedResult,
+                "updated_at" => time()
+            ]);
+            $this->clanStatsTools->mooveTaskFile($taskId, "taskSolved");
+            return $this->json(["success" => true, "taskId" => $taskId, "result" => $normalizedResult]);
+        } catch (\Exception $e) {
+            $this->clanStatsTools->updateTaskData($taskId, [
+                "status" => "failed",
+                "result" => ["error" => $e->getMessage()],
+                "failed_at" => time()
+            ]);
+            return $this->json(["success" => false, "error" => $e->getMessage()], 500);
+        }
     }
 }

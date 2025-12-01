@@ -9,7 +9,7 @@ const useHistoriqueClanWar = () => {
   };
 
   const historiqueClanWar = useCallback(
-    async (clan, warsSelected, activeMembers, exMembers) => {
+    async (clan, warsSelected, activeMembers, exMembers, taskId) => {
       clearErrors();
       try {
         const formatMembers = (membersData) =>
@@ -49,9 +49,14 @@ const useHistoriqueClanWar = () => {
           console.log("❌ Pas de propriété exMembers ou activeMembers dans la réponse");
           return { success: false, data: [], message: MESSAGES.NO_RESULT_DATA };
         }
+        if (!result.taskId) {
+          console.log("❌ Pas de propriété taskId dans la réponse");
+          return { success: false, data: [], message: MESSAGES.NO_RESULT_DATA };
+        }
 
         exMembers(formatMembers(result.exMembers));
         activeMembers(formatMembers(result.activeMembers));
+        taskId(result.taskId);
         return { success: true, data: [], message: "" };
       } catch (error) {
         console.error("💥 Erreur lors de la requête:", error);
