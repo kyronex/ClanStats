@@ -12,6 +12,7 @@ const useFetch = () => {
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
+          "X-Internal-Request": "true",
         },
         ...options, // Permet d'override les options par défaut
       });

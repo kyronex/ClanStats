@@ -164,25 +164,31 @@ final class ClanStatsController extends AbstractController
         if (!$request->headers->get("X-Internal-Request")) {
             return $this->json(["success" => false, "error" => "Forbidden"], 403);
         }
-
         $data = json_decode($request->getContent(), true);
         $taskId = $data["taskId"];
         try {
-            $result = $this->clanStatsService->getStatsHistoriqueClanWar($taskId);
-            $normalizedResult = $this->normalizer->normalize($result, null, ["groups" => "ajaxed"]);
-            $this->clanStatsTools->updateTaskData($taskId, [
-                "status" => "solved",
-                "result" => $normalizedResult,
-                "updated_at" => time()
-            ]);
-            $this->clanStatsTools->mooveTaskFile($taskId, "taskSolved");
-            return $this->json(["success" => true, "taskId" => $taskId, "result" => $normalizedResult]);
+            $taskData = $this->clanStatsTools->loadTaskData($taskId);
+            $normalizedResult = [];
+            if ($taskData["status"] == "completed") {
+                $normalizedResult = $this->normalizer->normalize($taskData["result"], null, ["groups" => "ajaxed"]);
+            } elseif ($taskData["status"] == "pending") {
+                $result = $this->clanStatsService->getStatsHistoriqueClanWar($taskId);
+                $normalizedResult = $this->normalizer->normalize($result, null, ["groups" => "ajaxed"]);
+                $this->clanStatsTools->updateTaskData($taskId, [
+                    "status" => "completed",
+                    "result" => $normalizedResult,
+                    "completed_at" => time()
+                ]);
+                $this->clanStatsTools->mooveTaskFile($taskId, "taskSolved");
+            }
+            return $this->json(["success" => true, "taskId" => $taskId, "status" => $taskData["status"], "data" => $normalizedResult]);
         } catch (\Exception $e) {
             $this->clanStatsTools->updateTaskData($taskId, [
                 "status" => "failed",
                 "result" => ["error" => $e->getMessage()],
                 "failed_at" => time()
             ]);
+            $this->clanStatsTools->mooveTaskFile($taskId, "taskErr");
             return $this->json(["success" => false, "error" => $e->getMessage()], 500);
         }
     }

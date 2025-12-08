@@ -9,6 +9,9 @@ npm install --save-dev @symfony/webpack-encore webpack-notifier @babel/core @bab
 echo "📦 Installation React 18 exacte..."
 npm install react@18.2.0 react-dom@18.2.0 --save --exact
 
+echo "📦 Installation Chart.js et react-chartjs-2..."
+npm install chart.js react-chartjs-2 --save
+
 echo "🔍 Vérification react-dom/client..."
 if [ ! -f "node_modules/react-dom/client.js" ]; then
   echo "❌ react-dom/client manquant - réinstallation..."
@@ -22,6 +25,7 @@ mkdir -p assets/styles assets/components
 echo "⚙️ Écriture webpack.config.js..."
 cat > webpack.config.js <<'EOF'
 const Encore = require("@symfony/webpack-encore");
+const path = require("path");
 if (!Encore.isRuntimeEnvironmentConfigured())
 	Encore.configureRuntimeEnvironment(process.env.NODE_ENV || "dev");
 Encore.setOutputPath("public/build/")
@@ -34,14 +38,26 @@ Encore.setOutputPath("public/build/")
 	.enableSourceMaps(!Encore.isProduction())
 	.enableVersioning(Encore.isProduction())
 	.configureBabel((config) => {
-		config.plugins.push("@babel/plugin-proposal-class-properties");
-	})
-	.configureBabelPresetEnv((config) => {
-		config.useBuiltIns = "usage";
-		config.corejs = "3.23";
-		config.targets = { browsers: ["> 1%", "last 2 versions", "not dead"] };
-	})
-	.enableReactPreset()
+    config.presets = [
+      [
+        "@babel/preset-env",
+        {
+          useBuiltIns: "usage",
+          corejs: "3.23",
+          targets: {
+            browsers: ["> 1%", "last 2 versions", "not dead"],
+          },
+        },
+      ],
+      [
+        "@babel/preset-react",
+        {
+          runtime: "automatic", // ← CRUCIAL
+        },
+      ],
+    ];
+    config.plugins = ["@babel/plugin-proposal-class-properties"];
+  })
 	.enableSassLoader()
 	.configureDevServerOptions((options) => {
 		options.port = 8081;
@@ -81,9 +97,8 @@ webpackConfig.watchOptions = {
 webpackConfig.resolve = {
 	...webpackConfig.resolve,
 	alias: {
-		react: require.resolve("react"),
-		"react-dom": require.resolve("react-dom"),
-		"react-dom/client": require.resolve("react-dom/client"),
+		"react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),
+    "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime.js"),
 	},
 	fallback: {
 		crypto: false,
@@ -148,7 +163,9 @@ cat > package.json <<'EOF'
   },
   "dependencies": {
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+		"chart.js": "^4.4.0",
+    "react-chartjs-2": "^5.2.0"
   }
 }
 EOF

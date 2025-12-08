@@ -75,10 +75,13 @@ class ClanStatsService
     {
         $this->logger->info("Lancement de : class 'ClanStatsService' function 'getStatsHistoriqueClanWar'.");
         $taskData = $this->clanStatsTools->loadTaskData($taskId);
-
         if (!$taskData) {
             return [];
         }
+        $this->clanStatsTools->updateTaskData($taskId, [
+            "status" => "processing",
+            "processing_at" => time()
+        ]);
         $playersStats = array_merge($taskData["data"]["activeMembers"], $taskData["data"]["exMembers"]);
         $statsHistoriqueClanWar = $this->clashRoyaleWarTools->processGetStatsHistoriqueClanWar($playersStats, $taskData["data"]["warsSelected"]);
         return $this->playersStatsAnalysis->getPlayersAnalysisStats($statsHistoriqueClanWar["warsStats"], $statsHistoriqueClanWar["playersStats"]);

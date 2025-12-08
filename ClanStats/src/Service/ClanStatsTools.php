@@ -48,8 +48,8 @@ class ClanStatsTools
   {
     $this->logger->info("Lancement de : class 'ClanStatsTools' function 'saveTaskFile'.");
     $taskData = [
-      "status" => "processing",
-      "created_at" => time(),
+      "status" => "pending",
+      "pending_at" => time(),
       "data" => $data,
       "result" => null
     ];

@@ -1,60 +1,7 @@
-.clanstats-app {
-	max-width: 800px;
-	margin: 2rem auto;
-	padding: 2rem;
-	background: linear-gradient(135deg, #667eea, #764ba2);
-	border-radius: 12px;
-	color: #fff;
-	text-align: center;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-.clanstats-app h1 {
-	font-size: 2rem;
-	margin-bottom: 1rem;
-}
-.hot-reload-demo {
-	margin: 1.5rem 0;
-}
-.hot-reload-demo button {
-	margin: 0.4rem;
-	padding: 0.6rem 1rem;
-	border: none;
-	border-radius: 8px;
-	cursor: pointer;
-}
-.hot-reload-demo .btn-primary {
-	background: #28a745;
-	color: #fff;
-}
-.hot-reload-demo .btn-secondary {
-	background: #17a2b8;
-	color: #fff;
-}
-.hot-reload-info {
-	background: rgba(255, 255, 255, 0.08);
-	padding: 1rem;
-	border-radius: 8px;
-	margin-top: 1rem;
-}
-
-/* CSS minimal et contextualisé pour le layout principal */
-.search-form-container {
-	background-color: #f8f9fa;
-	border-radius: 8px;
-	padding: 1.5rem;
-	margin-bottom: 2rem;
-	border: 1px solid #dee2e6;
-}
-
-.search-form-container h4 {
-	color: #495057;
-	margin-bottom: 1rem;
-}
-
-.response-container {
-	margin-bottom: 2rem;
-}
-
-.response-container:empty {
-	display: none;
-}
+.clanstats-app{max-width:800px;margin:2rem auto;padding:2rem;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;color:#fff;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.clanstats-app h1{font-size:2rem;margin-bottom:1rem}
+.hot-reload-demo{margin:1.5rem 0}
+.hot-reload-demo button{margin:.4rem;padding:.6rem 1rem;border:none;border-radius:8px;cursor:pointer}
+.hot-reload-demo .btn-primary{background:#28a745;color:#fff}
+.hot-reload-demo .btn-secondary{background:#17a2b8;color:#fff}
+.hot-reload-info{background:rgba(255,255,255,.08);padding:1rem;border-radius:8px;margin-top:1rem}

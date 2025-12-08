@@ -5,7 +5,7 @@ import ClanSearchResult from "./components/ClanSearchResult.jsx";
 import ClanRiverRaceLog from "./components/ClanRiverRaceLog.jsx";
 import ClanInfo from "./components/ClanInfo.jsx";
 import ClanHistoriqueWar from "./components/ClanHistoriqueWar.jsx";
-import Test from "./components/Test.jsx";
+import ClanStatsHistoriqueWar from "./components/ClanStatsHistoriqueWar.jsx";
 import React, { useState, useEffect } from "react";
 
 let createRoot;
@@ -45,6 +45,7 @@ function ClanStatsContainer() {
         </div>
       )}
 
+      {taskId.length > 0 && <ClanStatsHistoriqueWar taskId={taskId} />}
       {activeMembers.length > 0 && <ClanHistoriqueWar members={activeMembers} membersClan={true} />}
       {exMembers.length > 0 && <ClanHistoriqueWar members={exMembers} membersClan={false} />}
     </div>
