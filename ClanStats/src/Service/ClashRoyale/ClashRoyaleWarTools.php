@@ -11,10 +11,17 @@ use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\War;
 use App\Dto\ClashRoyale\Analysis\WarStatsHistoriqueClanWar;
 
+use App\Enum\PlayerMetric;
+
 class ClashRoyaleWarTools
 {
     private LoggerInterface $logger;
     private SerializerInterface $serializer;
+    private const TARGETS_STATS_WARS = [
+        "fame",
+        "boatAttacks",
+        "decksUsed"
+    ];
 
     public function __construct(LoggerInterface $logger, SerializerInterface $serializer)
     {
@@ -149,6 +156,11 @@ class ClashRoyaleWarTools
         }
 
         $warsDto = [];
+        foreach (self::TARGETS_STATS_WARS as $target) {
+            $metric = PlayerMetric::from($target);
+            $warsStat = $this->updateMedianWarStat($metric, $warsStat, $playersDto);
+        }
+
         foreach ($warsStat as $key => $stat) {
             $data = array_merge($stat, ["sessionId" => $key]);
             $warsDto[$key] = new WarStatsHistoriqueClanWar($data);
@@ -157,8 +169,44 @@ class ClashRoyaleWarTools
         return $result;
     }
 
+    /**
+     * @param PlayerMetric $metric La métrique à analyser
+     * @param WarStatsHistoriqueClanWar> $warsStats
+     * @param  PlayerStatsHistoriqueClanWar $playersStats
+     * @return array<string, int>
+     */
+    private function updateMedianWarStat(PlayerMetric $metric, array $warsStat,  array $playersDto)
+    {
+        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateMedianWarStat'.");
+        foreach ($warsStat as $warKey => $warStat) {
+            if ($warKey !== "all") {
+                $scores = [];
+                foreach ($warStat["players"] as $playerKey) {
+                    $scores[] = $metric->getValue($playersDto[$playerKey], $warKey);
+                }
+                $median = $this->calculateMedian($scores);
+                $medianKey = "median" . ucfirst($metric->value);
+                $warsStat[$warKey][$medianKey] = $median;
+            }
+        }
+        return $warsStat;
+    }
+
+    private function calculateMedian(array $values): float
+    {
+        sort($values, SORT_NUMERIC);
+        $total = count($values);
+        $milieu = floor($total / 2);
+        if ($total % 2 === 0) {
+            return ($values[$milieu - 1] + $values[$milieu]) / 2;
+        } else {
+            return $values[$milieu];
+        }
+    }
+
     private function updateReelWarStat(array $warStat, string $key, array $data): array
     {
+        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateReelWarStat'.");
         $targets = ["fame", "boatAttacks", "decksUsed"];
         foreach ($targets as $target) {
             if ($warStat[$key]["reelMax" . ucfirst($target)] < $data[$target]) {

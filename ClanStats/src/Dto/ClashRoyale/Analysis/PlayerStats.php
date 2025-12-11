@@ -16,27 +16,27 @@ class PlayerStats
     #[Groups(["ajaxed"])]
     private readonly PlayerStatsHistoriqueClanWar $originalStats;
 
-    #[Assert\Type('array')]
+    #[Assert\Type("array")]
     #[Groups(["ajaxed"])]
     private array $fameRank = [];
 
-    #[Assert\NotBlank]
+    #[Assert\Type("array")]
     #[Groups(["ajaxed"])]
     private array $fameRankDown = [];
 
-    #[Assert\Type("integer")]
+    #[Assert\Type("array")]
     #[Groups(["ajaxed"])]
     private array $boatAttacksRank = [];
 
-    #[Assert\Type("integer")]
+    #[Assert\Type("array")]
     #[Groups(["ajaxed"])]
     private array $boatAttacksRankDown = [];
 
-    #[Assert\Type("integer")]
+    #[Assert\Type("array")]
     #[Groups(["ajaxed"])]
     private array $decksUsedRank = [];
 
-    #[Assert\Type("integer")]
+    #[Assert\Type("array")]
     #[Groups(["ajaxed"])]
     private array $decksUsedRankDown = [];
 

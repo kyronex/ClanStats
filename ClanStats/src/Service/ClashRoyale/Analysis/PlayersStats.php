@@ -3,11 +3,9 @@
 namespace App\Service\ClashRoyale\Analysis;
 
 use Psr\Log\LoggerInterface;
-use App\Dto\ClashRoyale\Analysis\War;
 use App\Dto\ClashRoyale\Analysis\WarStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\PlayerStats;
-use App\Dto\ClashRoyale\Analysis\Score;
 
 use App\Enum\PlayerMetric;
 
@@ -17,7 +15,7 @@ class PlayersStats
 {
   private LoggerInterface $logger;
   private ParameterBagInterface $parameterBag;
-  private const TARGETS = [
+  private const TARGETS_RANK = [
     "fameRank",
     "fameRankDown",
     "boatAttacksRank",
@@ -58,7 +56,7 @@ class PlayersStats
           if (!in_array($playerKey, $warStats->getPlayers())) continue;
           $score = [];
           $score = [...$score, "sessionId" => $warKey, "continuity" => 0];
-          foreach (self::TARGETS as $target) {
+          foreach (self::TARGETS_RANK as $target) {
             if (preg_match("/^fame/", $target, $matches)) {
               $score = [...$score, ...$this->getScore(PlayerMetric::FAME, $warStats, $playerStats, $warKey, $target, $data)];
             } elseif (preg_match("/^boatAttacks/", $target, $matches)) {
@@ -116,14 +114,8 @@ class PlayersStats
         $dataModified["scores"][$tagWar]["continuity"] = (float)$this->parameterBag->get("clash_royale.score.init_continuity");
       }
 
-      foreach (self::TARGETS as $target) {
-        if (preg_match("/^fame/", $target, $matches)) {
-          $dataModified["scores"][$tagWar][$target] = $dataModified["scores"][$tagWar][$target] * $temporalMultiplier[$tagWar];
-        } elseif (preg_match("/^boatAttacks/", $target, $matches)) {
-          $dataModified["scores"][$tagWar][$target] = $dataModified["scores"][$tagWar][$target] * $temporalMultiplier[$tagWar];
-        } elseif (preg_match("/^decksUsed/", $target, $matches)) {
-          $dataModified["scores"][$tagWar][$target] = $dataModified["scores"][$tagWar][$target] * $temporalMultiplier[$tagWar];
-        }
+      foreach (self::TARGETS_RANK as $target) {
+        $dataModified["scores"][$tagWar][$target] = $dataModified["scores"][$tagWar][$target] * $temporalMultiplier[$tagWar];
       }
       $dataModified["scores"][$tagWar]["continuity"] = $dataModified["scores"][$tagWar]["continuity"] * $temporalMultiplier[$tagWar];
     }

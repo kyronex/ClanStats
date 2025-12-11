@@ -13,55 +13,55 @@ class Score
   #[Groups(["ajaxed"])]
   private string $sessionId;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $continuity; // continuity = lastContinuity + evoContinuity  ||| MAX = 1900 pour 100 et 20
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $posFameRank; //  Pos - 1 / nbPlayers x 100 ||| on garde le % de position du score |||  Fame Max observer 3600
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $fameRank; // recupere le fame et applique la formule (multMax - (posFame(multMax - multMin) / 100 )) ||| Multiplicateur max = 1.25 ||| Multiplicateur min = 0.75 ||
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $posFameRankDown;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $fameRankDown;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $posBoatAttacksRank;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $boatAttacksRank;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $posBoatAttacksRankDown;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $boatAttacksRankDown;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $posDecksUsedRank;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $decksUsedRank;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $posDecksUsedRankDown;
 
-  #[Assert\Type("integer")]
+  #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
   private float $decksUsedRankDown;
 

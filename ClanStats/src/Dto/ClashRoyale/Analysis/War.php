@@ -36,17 +36,17 @@ class War
     return $this->sessionId;
   }
 
-  public function getFame(): string
+  public function getFame(): int
   {
     return $this->fame;
   }
 
-  public function getBoatAttacks(): string
+  public function getBoatAttacks(): int
   {
     return $this->boatAttacks;
   }
 
-  public function getDecksUsed(): string
+  public function getDecksUsed(): int
   {
     return $this->decksUsed;
   }

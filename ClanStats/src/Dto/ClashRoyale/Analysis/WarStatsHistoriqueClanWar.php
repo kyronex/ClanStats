@@ -36,6 +36,18 @@ class WarStatsHistoriqueClanWar
     #[Groups(["ajaxed"])]
     private int $reelMaxDecksUsed;
 
+    #[Assert\Type("float")]
+    #[Groups(["ajaxed"])]
+    private float $medianFame;
+
+    #[Assert\Type("float")]
+    #[Groups(["ajaxed"])]
+    private float $medianBoatAttacks;
+
+    #[Assert\Type("float")]
+    #[Groups(["ajaxed"])]
+    private float $medianDecksUsed;
+
     #[Assert\Type("string")]
     #[Groups(["ajaxed"])]
     private array $players = [];
@@ -49,6 +61,9 @@ class WarStatsHistoriqueClanWar
         $this->reelMaxBoatAttacks = $data["reelMaxBoatAttacks"] ?? 1;
         $this->reelMinDecksUsed = $data["reelMinDecksUsed"] ?? 1;
         $this->reelMaxDecksUsed = $data["reelMaxDecksUsed"] ?? 1;
+        $this->medianFame = $data["medianFame"] ?? 0;
+        $this->medianBoatAttacks = $data["medianBoatAttacks"] ?? 0;
+        $this->medianDecksUsed = $data["medianDecksUsed"] ?? 0;
         $this->players = $data["players"] ?? [];
     }
 
@@ -57,34 +72,49 @@ class WarStatsHistoriqueClanWar
         return $this->sessionId;
     }
 
-    public function getReelMaxFame(): string
+    public function getReelMaxFame(): int
     {
         return $this->reelMaxFame;
     }
 
-    public function getReelMinFame(): string
+    public function getReelMinFame(): int
     {
         return $this->reelMinFame;
     }
 
-    public function getReelMinBoatAttacks(): string
+    public function getReelMinBoatAttacks(): int
     {
         return $this->reelMinBoatAttacks;
     }
 
-    public function getReelMaxBoatAttacks(): string
+    public function getReelMaxBoatAttacks(): int
     {
         return $this->reelMaxBoatAttacks;
     }
 
-    public function getReelMinDecksUsed(): string
+    public function getReelMinDecksUsed(): int
     {
         return $this->reelMinDecksUsed;
     }
 
-    public function getReelMaxDecksUsed(): string
+    public function getReelMaxDecksUsed(): int
     {
         return $this->reelMaxDecksUsed;
+    }
+
+    public function getMedianFame(): float
+    {
+        return $this->medianFame;
+    }
+
+    public function getMedianBoatAttacks(): float
+    {
+        return $this->medianBoatAttacks;
+    }
+
+    public function getMedianDecksUsed(): float
+    {
+        return $this->medianDecksUsed;
     }
 
     public function getTotalPlayers(): int

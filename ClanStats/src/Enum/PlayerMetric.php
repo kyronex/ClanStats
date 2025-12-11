@@ -7,9 +7,9 @@ use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
 enum PlayerMetric: string
 {
   // 🏆 MÉTRIQUES PRINCIPALES
-  case FAME = 'fame';
-  case BOAT_ATTACKS = 'boatAttacks';
-  case DECKS_USED = 'DecksUsed';
+  case FAME = "fame";
+  case BOAT_ATTACKS = "boatAttacks";
+  case DECKS_USED = "decksUsed";
 
   /**
    * @param PlayerStatsHistoriqueClanWar
@@ -31,9 +31,9 @@ enum PlayerMetric: string
   public function getLabel(): string
   {
     return match ($this) {
-      self::FAME => 'Fame',
-      self::BOAT_ATTACKS => 'Attaques Bateau',
-      self::DECKS_USED => 'Decks Utilisés',
+      self::FAME => "Fame",
+      self::BOAT_ATTACKS => "Attaques Bateau",
+      self::DECKS_USED => "Decks Utilisés",
     };
   }
 }
