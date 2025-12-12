@@ -9,7 +9,6 @@ const useTableSort = (initialKeys = [], initialData) => {
   });
 
   const handleWaySorts = useCallback((key) => {
-    console.log(`handleWaySorts`);
     setConfTabSort((prev) => {
       if (key in prev) {
         return {
@@ -23,7 +22,6 @@ const useTableSort = (initialKeys = [], initialData) => {
   }, []);
 
   const handleResetSorts = useCallback(() => {
-    console.log(`handleResetSorts`);
     setConfTabSort((prev) => {
       const result = {};
       for (const key of Object.keys(prev)) {
@@ -34,7 +32,6 @@ const useTableSort = (initialKeys = [], initialData) => {
   }, []);
 
   const handleEnabledSorts = useCallback((key) => {
-    console.log(`handleEnabledSorts`);
     setConfTabSort((prev) => {
       if (key in prev) {
         if (!prev[key].active) {
@@ -78,7 +75,6 @@ const useTableSort = (initialKeys = [], initialData) => {
   }, [tabConfSort]);
 
   const sortedData = useMemo(() => {
-    console.log(`useMemo sortData`);
     const createMultiCriteriaComparator = (activeSorts) => {
       const confSorts = Object.entries(activeSorts).sort((a, b) => a[1].order - b[1].order);
       return (a, b) => {

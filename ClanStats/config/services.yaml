@@ -23,6 +23,9 @@ parameters:
   clash_royale.score.evo_continuity: "%env(CLASH_ROYALE_SCORE_EVO_CONTINUITY)%"
   clash_royale.score.decay_continuity: "%env(CLASH_ROYALE_SCORE_DECAY_CONTINUITY)%"
 
+  clash_royale.score.normalisation_decks_used: "%env(CLASH_ROYALE_SCORE_NORMALISATION_DECKS_USED)%"
+  clash_royale.score.normalisation_boat_attacks: "%env(CLASH_ROYALE_SCORE_NORMALISATION_BOAT_ATTACKS)%"
+
   clash_royale.score.multiplier_max: "%env(CLASH_ROYALE_SCORE_MULTIPLIER_MAX)%"
   clash_royale.score.multiplier_min: "%env(CLASH_ROYALE_SCORE_MULTIPLIER_MIN)%"
 

@@ -133,4 +133,14 @@ class PlayerStatsHistoriqueClanWar
     {
         return $this->currentPlayer;
     }
+
+    public function toArray(): array
+    {
+        return [
+            "tag" => $this->tag,
+            "name" => $this->name,
+            "currentPlayer" => $this->currentPlayer,
+            "wars" => $this->wars,
+        ];
+    }
 }

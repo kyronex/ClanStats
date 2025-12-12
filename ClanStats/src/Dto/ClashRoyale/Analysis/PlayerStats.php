@@ -11,7 +11,6 @@ use App\Dto\ClashRoyale\Analysis\Score;
 
 class PlayerStats
 {
-
     #[Assert\NotNull]
     #[Groups(["ajaxed"])]
     private readonly PlayerStatsHistoriqueClanWar $originalStats;
@@ -47,7 +46,25 @@ class PlayerStats
     ])]
     #[Valid]
     #[Groups(["ajaxed"])]
-    private array $scores;
+    private array $scoresInitial;
+
+    #[Assert\NotNull]
+    #[Assert\Count(min: 1)]
+    #[Assert\All([
+        new Assert\Type(Score::class)
+    ])]
+    #[Valid]
+    #[Groups(["ajaxed"])]
+    private array $scoresNormalized;
+
+    #[Assert\NotNull]
+    #[Assert\Count(min: 1)]
+    #[Assert\All([
+        new Assert\Type(Score::class)
+    ])]
+    #[Valid]
+    #[Groups(["ajaxed"])]
+    private array $scoresFinal;
 
     public function __construct(array $data)
     {
@@ -56,22 +73,41 @@ class PlayerStats
         $this->fameRankDown = $data["fameRankDown"];
         $this->boatAttacksRank = $data["boatAttacksRank"];
         $this->boatAttacksRankDown = $data["boatAttacksRankDown"];
-        $this->decksUsedRank = $data["boatAttacksRank"];
-        $this->decksUsedRankDown = $data["boatAttacksRankDown"];
-        $this->createDtoScores($data["scores"]);
+        $this->decksUsedRank = $data["decksUsedRank"];
+        $this->decksUsedRankDown = $data["decksUsedRankDown"];
+        $this->createDtoScoresInitial($data["scoresInitial"]);
+        $this->createDtoScoresNormalized($data["scoresNormalized"]);
+        $this->createDtoScoresFinal($data["scoresFinal"]);
     }
 
-    private function createDtoScores(array $scores): void
+    private function createScoresArray(array $scores): array
     {
-        $this->scores = [];
+        $result = [];
         foreach ($scores as $key => $scoresData) {
             if ($scoresData instanceof Score) {
-                $this->scores[$key] = $scoresData;
+                $result[$key] = $scoresData;
             } elseif (is_array($scoresData)) {
-                $this->scores[$key] = new Score($scoresData);
+                $result[$key] = new Score($scoresData);
             }
         }
+        return $result;
     }
+
+    private function createDtoScoresInitial(array $scores): void
+    {
+        $this->scoresInitial = $this->createScoresArray($scores);
+    }
+
+    private function createDtoScoresFinal(array $scores): void
+    {
+        $this->scoresFinal = $this->createScoresArray($scores);
+    }
+
+    private function createDtoScoresNormalized(array $scores): void
+    {
+        $this->scoresNormalized = $this->createScoresArray($scores);
+    }
+
 
     public function getOriginalStats(): PlayerStatsHistoriqueClanWar
     {
@@ -118,8 +154,34 @@ class PlayerStats
         return $this->originalStats->getName();
     }
 
-    public function getScores(): array
+    public function getScoresInitial(): array
     {
-        return $this->scores;
+        return $this->scoresInitial;
+    }
+
+    public function getScoresNormalized(): array
+    {
+        return $this->scoresNormalized;
+    }
+
+    public function getScoresFinal(): array
+    {
+        return $this->scoresFinal;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            "originalStats" => $this->originalStats->toArray(),
+            "fameRank" => $this->fameRank,
+            "fameRankDown" => $this->fameRankDown,
+            "boatAttacksRank" => $this->boatAttacksRank,
+            "boatAttacksRankDown" => $this->boatAttacksRankDown,
+            "decksUsedRank" => $this->decksUsedRank,
+            "decksUsedRankDown" => $this->decksUsedRankDown,
+            "scoresInitial" => $this->scoresInitial,
+            "scoresNormalized" => $this->scoresNormalized,
+            "scoresFinal" => $this->scoresFinal,
+        ];
     }
 }

@@ -16,11 +16,11 @@ class Member
     private string $tag;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $expLevel;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $trophies;
 
     #[Assert\NotBlank]
@@ -36,11 +36,11 @@ class Member
     private int $previousClanRank;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $donations;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $donationsReceived;
 
     #[Assert\NotBlank]

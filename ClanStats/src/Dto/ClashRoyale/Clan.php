@@ -11,15 +11,15 @@ use App\Dto\ClashRoyale\Member;
 class Clan
 {
     #[Assert\NotBlank]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private string $name;
 
     #[Assert\NotBlank]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private string $tag;
 
     #[Assert\NotBlank]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private string $description;
 
     #[Assert\Type("integer")]
@@ -27,27 +27,27 @@ class Clan
     private int $badgeId;
 
     #[Assert\NotBlank]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private string $type;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $requiredTrophies;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $clanScore;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $clanWarTrophies;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $donationsPerWeek;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $members;
 
     #[Assert\NotNull]

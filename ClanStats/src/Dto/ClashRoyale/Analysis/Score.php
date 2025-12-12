@@ -19,7 +19,7 @@ class Score
 
   #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
-  private float $posFameRank; //  Pos - 1 / nbPlayers x 100 ||| on garde le % de position du score |||  Fame Max observer 3600
+  private float $posFameRank; //  Pos - 1 / nbPlayers x 100 ||| on garde le % de position du score top 0% (top 1)
 
   #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
@@ -27,7 +27,7 @@ class Score
 
   #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
-  private float $posFameRankDown;
+  private float $posFameRankDown;  // Prends en compte les egaliter de position
 
   #[Assert\Type("float")]
   #[Groups(["ajaxed"])]
@@ -155,5 +155,25 @@ class Score
   public function getDecksUsedRankDown(): float
   {
     return $this->decksUsedRankDown;
+  }
+
+  public function toArray(): array
+  {
+    return [
+      "sessionId" => $this->sessionId,
+      "continuity" => $this->continuity,
+      "posFameRank" => $this->posFameRank,
+      "fameRank" => $this->fameRank,
+      "posFameRankDown" => $this->posFameRankDown,
+      "fameRankDown" => $this->fameRankDown,
+      "posBoatAttacksRank" => $this->posBoatAttacksRank,
+      "boatAttacksRank" => $this->boatAttacksRank,
+      "posBoatAttacksRankDown" => $this->posBoatAttacksRankDown,
+      "boatAttacksRankDown" => $this->boatAttacksRankDown,
+      "posDecksUsedRank" => $this->posDecksUsedRank,
+      "decksUsedRank" => $this->decksUsedRank,
+      "posDecksUsedRankDown" => $this->posDecksUsedRankDown,
+      "decksUsedRankDown" => $this->decksUsedRankDown,
+    ];
   }
 }

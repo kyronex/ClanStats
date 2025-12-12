@@ -108,10 +108,10 @@ class ClashRoyaleWarTools
             $playersStats[$player]["averageWarsDecksUsed"] = round($playersStats[$player]["totalWarsDecksUsed"] / $playersStats[$player]["totalWarsParticipated"], 4);
         }
         $activeMembers = array_filter($playersStats, function ($player) {
-            return $player['currentPlayer'] === true;
+            return $player["currentPlayer"] === true;
         });
         $exMembers = array_filter($playersStats, function ($player) {
-            return $player['currentPlayer'] === false;
+            return $player["currentPlayer"] === false;
         });
         return [
             "activeMembers" => $activeMembers,
@@ -177,7 +177,7 @@ class ClashRoyaleWarTools
      */
     private function updateMedianWarStat(PlayerMetric $metric, array $warsStat,  array $playersDto)
     {
-        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateMedianWarStat'.");
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateMedianWarStat'.");
         foreach ($warsStat as $warKey => $warStat) {
             if ($warKey !== "all") {
                 $scores = [];
@@ -194,6 +194,7 @@ class ClashRoyaleWarTools
 
     private function calculateMedian(array $values): float
     {
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'calculateMedian'.");
         sort($values, SORT_NUMERIC);
         $total = count($values);
         $milieu = floor($total / 2);
@@ -206,7 +207,7 @@ class ClashRoyaleWarTools
 
     private function updateReelWarStat(array $warStat, string $key, array $data): array
     {
-        $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateReelWarStat'.");
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateReelWarStat'.");
         $targets = ["fame", "boatAttacks", "decksUsed"];
         foreach ($targets as $target) {
             if ($warStat[$key]["reelMax" . ucfirst($target)] < $data[$target]) {

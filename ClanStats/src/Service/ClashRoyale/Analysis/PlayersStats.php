@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use App\Dto\ClashRoyale\Analysis\WarStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\PlayerStats;
+use App\Dto\ClashRoyale\Analysis\Score;
 
 use App\Enum\PlayerMetric;
 
@@ -22,6 +23,20 @@ class PlayersStats
     "boatAttacksRankDown",
     "decksUsedRank",
     "decksUsedRankDown"
+  ];
+
+  private const FIELDS_TO_ROUND = [
+    "ceil" => [
+      "fameRank",
+      "boatAttacksRank",
+      "decksUsedRank",
+    ],
+    "floor" => [
+      "fameRankDown",
+      "boatAttacksRankDown",
+      "decksUsedRankDown",
+      "continuity"
+    ]
   ];
   public function __construct(ParameterBagInterface $parameterBag, LoggerInterface $logger)
   {
@@ -49,7 +64,7 @@ class PlayersStats
       $data["boatAttacksRankDown"] = $this->getPosition(PlayerMetric::BOAT_ATTACKS, $warsStats, $playersStats, $playerKey, true);
       $data["decksUsedRank"] = $this->getPosition(PlayerMetric::DECKS_USED, $warsStats, $playersStats, $playerKey, false);
       $data["decksUsedRankDown"] = $this->getPosition(PlayerMetric::DECKS_USED, $warsStats, $playersStats, $playerKey, true);
-      $data["scores"] = [];
+      $data["scoresInitial"] = [];
 
       foreach ($warsStats as $warKey => $warStats) {
         if ($warKey !== "all") {
@@ -65,10 +80,10 @@ class PlayersStats
               $score = [...$score, ...$this->getScore(PlayerMetric::DECKS_USED, $warStats, $playerStats, $warKey, $target, $data)];
             }
           }
-          $data["scores"][$warKey] = $score;
-          // $data["scores"][$warKey] = new Score($score);
+          $data["scoresInitial"][$warKey] = new Score($score);
         }
       }
+      $data = $this->getScoreNormalized($data);
       $data = $this->getScoreVariable($warsStats, $data);
       $playersAnalysisStats[$playerKey] = new PlayerStats($data);
     }
@@ -76,14 +91,55 @@ class PlayersStats
   }
 
   /**
-   * @param WarStatsHistoriqueClanWar> $warsStats
+   * @param array $dataPlayer
+   * @return array
+   */
+  public function getScoreNormalized($dataPlayer)
+  {
+    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getScoreNormalized'.");
+    $dataModified = $dataPlayer;
+    $dataModified["scoresNormalized"] = [];
+    foreach ($dataModified["scoresInitial"] as $warKey => $score) {
+      $scoreData = $score->toArray();
+      foreach (self::TARGETS_RANK as $target) {
+        $methodName = "get" . ucfirst($target);
+        $originalValue = $score->$methodName();
+        $newValue = 0;
+        if (preg_match("/^decksUsed/", $target, $matches)) {
+          $newValue = $originalValue * $this->parameterBag->get("clash_royale.score.normalisation_decks_used");
+        } elseif (preg_match("/^boatAttacks/", $target, $matches)) {
+          $newValue = $originalValue * $this->parameterBag->get("clash_royale.score.normalisation_boat_attacks");
+        } else {
+          $newValue = $originalValue;
+        }
+        $newValue = $this->getFieldsToRound($target, $newValue);
+        $scoreData[$target] = $newValue;
+      }
+      $dataModified["scoresNormalized"][$warKey] = new Score($scoreData);
+    }
+    return $dataModified;
+  }
+
+  public function getFieldsToRound($target, $value)
+  {
+    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getFieldsToRound'.");
+    $newValue = 0;
+    if (in_array($target, self::FIELDS_TO_ROUND["ceil"])) {
+      $newValue = ceil($value);
+    } elseif (in_array($target, self::FIELDS_TO_ROUND["floor"])) {
+      $newValue = floor($value);
+    }
+    return $newValue;
+  }
+
+  /**
+   * @param array<string, WarStatsHistoriqueClanWar> $warsStats
    * @param array $dataPlayer
    * @return array<string, int>
    */
   public function getScoreVariable($warsStats, $dataPlayer)
   {
-    $this->logger->info("Lancement de : class 'PlayersStats' function 'getScoreVariable'.");
-
+    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getScoreVariable'.");
     $wsNats =  array_keys($warsStats);
     natsort($wsNats);
     $wsNats = array_reverse(array_values($wsNats));
@@ -96,42 +152,42 @@ class PlayersStats
       }
     }
     $dataModified = $dataPlayer;
+    $dataModified["scoresFinal"] = [];
+    foreach (array_reverse($dataModified["scoresNormalized"]) as $warKey => $score) {
+      $scoreData = $score->toArray();
+      $previousWar = $this->getPreviousWar($temporalMultiplier, $warKey);
+      $continuity = (float)$this->parameterBag->get("clash_royale.score.init_continuity");
 
-    foreach (array_reverse($dataPlayer["scores"]) as $tagWar => $value) {
-      $previousWar = $this->getPreviousWar($temporalMultiplier, $tagWar);
-      if ($previousWar !== "") {
-        if (isset($dataModified["scores"][$previousWar]["continuity"])) {
-          $oldContinuity = $dataModified["scores"][$previousWar]["continuity"];
-          if ($oldContinuity < $this->parameterBag->get("clash_royale.score.init_continuity")) {
-            $oldContinuity = $this->parameterBag->get("clash_royale.score.init_continuity");
-          }
-          $dataModified["scores"][$tagWar]["continuity"] = $oldContinuity + $this->parameterBag->get("clash_royale.score.evo_continuity");
-        } else {
-          // TODO Ajouter last continuity after $tagWar . Soustraire a decay_continuity compare avec init_continuity garde + grand
-          $dataModified["scores"][$tagWar]["continuity"] = (float)$this->parameterBag->get("clash_royale.score.init_continuity");
+      if ($previousWar !== ""  && isset($dataModified["scoresFinal"][$previousWar])) {
+        $oldContinuity = $dataModified["scoresFinal"][$previousWar]->getContinuity();
+        if ($oldContinuity < $this->parameterBag->get("clash_royale.score.init_continuity")) {
+          $oldContinuity = $this->parameterBag->get("clash_royale.score.init_continuity");
         }
-      } else {
-        $dataModified["scores"][$tagWar]["continuity"] = (float)$this->parameterBag->get("clash_royale.score.init_continuity");
+        $continuity = $oldContinuity + $this->parameterBag->get("clash_royale.score.evo_continuity");
       }
-
+      $scoreData = [...$scoreData, "continuity" => $this->getFieldsToRound("continuity", $continuity * $temporalMultiplier[$warKey])];
       foreach (self::TARGETS_RANK as $target) {
-        $dataModified["scores"][$tagWar][$target] = $dataModified["scores"][$tagWar][$target] * $temporalMultiplier[$tagWar];
+        $methodName = "get" . ucfirst($target);
+        $originalValue = $score->$methodName();
+        $newValue =  $originalValue * $temporalMultiplier[$warKey];
+        $scoreData[$target] = $this->getFieldsToRound($target, $newValue);
       }
-      $dataModified["scores"][$tagWar]["continuity"] = $dataModified["scores"][$tagWar]["continuity"] * $temporalMultiplier[$tagWar];
+      $dataModified["scoresFinal"][$warKey] = new Score($scoreData);
     }
+    $dataModified["scoresFinal"] = array_reverse($dataModified["scoresFinal"]);
     return $dataModified;
   }
 
   /**
    * @param array<string, int> $warsStats
-   * @param string $tagWar
+   * @param string $warKey
    * @return string
    */
-  public function getPreviousWar($warsStats,  $tagWar)
+  public function getPreviousWar($warsStats,  $warKey)
   {
-    $this->logger->info("Lancement de : class 'PlayersStats' function 'getPreviousWar'.");
+    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getPreviousWar'.");
     $previousWar = "";
-    if (preg_match('/^(\d+)_(\d+)$/', $tagWar, $matches)) {
+    if (preg_match('/^(\d+)_(\d+)$/', $warKey, $matches)) {
       $session = $matches[1];
       $section = $matches[2];
       if ($section > 0) {
@@ -161,16 +217,17 @@ class PlayersStats
   }
 
   /**
-   * @param PlayerMetric $metric La métrique à analyser
-   * @param WarStatsHistoriqueClanWar> $warsStats
-   * @param  PlayerStatsHistoriqueClanWar $playersStats
-   * @param string $tagPlayer
-   * @param bool $warKey
-   * @return array<string, int>
+   * @param PlayerMetric $metric
+   * @param WarStatsHistoriqueClanWar $warStats
+   * @param PlayerStatsHistoriqueClanWar $playerStats
+   * @param string $warKey
+   * @param string $target
+   * @param array $data
+   * @return array<string, float>
    */
   private function getScore(PlayerMetric $metric, $warStats, $playerStats, $warKey, $target, $data)
   {
-    $this->logger->info("Lancement de : class 'PlayersStats' function 'getScore'.");
+    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getScore'.");
     $score = [];
     $score["pos" . ucfirst($target)] = ($data[$target][$warKey] - 1) / count($warStats->getPlayers()) * 100;
     $score[$target] = $metric->getValue($playerStats, $warKey) * $this->getPositionMultiplier($score["pos" . ucfirst($target)]);
@@ -178,7 +235,7 @@ class PlayersStats
   }
   public function getPositionMultiplier(float $position): float
   {
-    $this->logger->info("Lancement de : class 'PlayersStats' function 'getPositionMultiplier'.");
+    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getPositionMultiplier'.");
     $range = $this->parameterBag->get("clash_royale.score.multiplier_max") - $this->parameterBag->get("clash_royale.score.multiplier_min");
     $positionRatio = $position / 100;
     return $this->parameterBag->get("clash_royale.score.multiplier_max") - ($positionRatio * $range);
@@ -194,7 +251,7 @@ class PlayersStats
    */
   private function getPosition(PlayerMetric $metric, $warsStats, $playersStats, $tagPlayer, $isDown = false)
   {
-    $this->logger->info("Lancement de : class 'PlayersStats' function 'getPosition'.");
+    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getPosition'.");
     $position = [];
     foreach ($warsStats as $warKey => $warStats) {
       if ($warKey !== "all") {

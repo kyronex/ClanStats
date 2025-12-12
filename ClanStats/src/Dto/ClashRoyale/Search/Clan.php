@@ -8,27 +8,27 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class Clan
 {
     #[Assert\NotBlank]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private string $name;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $clanScore;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $clanWarTrophies;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $donationsPerWeek;
 
     #[Assert\Type("integer")]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private int $members;
 
     #[Assert\NotBlank]
-    #[Groups(['ajaxed'])]
+    #[Groups(["ajaxed"])]
     private string $tag;
 
     public function __construct(array $data)
