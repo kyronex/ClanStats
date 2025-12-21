@@ -116,6 +116,8 @@ class AnalysisPlayersStats
         $scores[] = $playerStats->getSeasonScoresFinal($warKey)->getContinuity() ?? 0;;
       }
 
+      $newWarStats["medianBoatAttacks"] = $this->getFieldsToRound("boatAttacksRank", $newWarStats["medianBoatAttacks"] * $this->parameterBag->get("clash_royale.score.normalisation_boat_attacks"));
+      $newWarStats["medianDecksUsed"] = $this->getFieldsToRound("decksUsedRank", $newWarStats["medianDecksUsed"] * $this->parameterBag->get("clash_royale.score.normalisation_decks_used"));
       $newWarStats["medianContinuity"] = $this->getFieldsToRound("continuity", $this->analysisTools->calculateMedian($scores));
       $warsDto[$warKey] = new WarStatsHistoriqueClanWar($newWarStats);
     }
