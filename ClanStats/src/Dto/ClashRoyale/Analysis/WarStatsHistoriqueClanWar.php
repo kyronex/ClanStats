@@ -48,6 +48,10 @@ class WarStatsHistoriqueClanWar
     #[Groups(["ajaxed"])]
     private float $medianDecksUsed;
 
+    #[Assert\Type("float")]
+    #[Groups(["ajaxed"])]
+    private float $medianContinuity;
+
     #[Assert\Type("string")]
     #[Groups(["ajaxed"])]
     private array $players = [];
@@ -64,6 +68,7 @@ class WarStatsHistoriqueClanWar
         $this->medianFame = $data["medianFame"] ?? 0;
         $this->medianBoatAttacks = $data["medianBoatAttacks"] ?? 0;
         $this->medianDecksUsed = $data["medianDecksUsed"] ?? 0;
+        $this->medianContinuity = $data["medianContinuity"] ?? 0;
         $this->players = $data["players"] ?? [];
     }
 
@@ -117,6 +122,11 @@ class WarStatsHistoriqueClanWar
         return $this->medianDecksUsed;
     }
 
+    public function getMedianContinuity(): float
+    {
+        return $this->medianContinuity;
+    }
+
     public function getTotalPlayers(): int
     {
         return count($this->players);
@@ -125,5 +135,23 @@ class WarStatsHistoriqueClanWar
     public function getPlayers(): array
     {
         return $this->players;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            "sessionId" => $this->sessionId,
+            "reelMaxFame" => $this->reelMaxFame,
+            "reelMinFame" => $this->reelMinFame,
+            "reelMinBoatAttacks" => $this->reelMinBoatAttacks,
+            "reelMinDecksUsed" => $this->reelMinDecksUsed,
+            "reelMaxBoatAttacks" => $this->reelMaxBoatAttacks,
+            "reelMaxDecksUsed" => $this->reelMaxDecksUsed,
+            "medianFame" => $this->medianFame,
+            "medianBoatAttacks" => $this->medianBoatAttacks,
+            "medianDecksUsed" => $this->medianDecksUsed,
+            "medianContinuity" => $this->medianContinuity,
+            "players" => $this->players,
+        ];
     }
 }

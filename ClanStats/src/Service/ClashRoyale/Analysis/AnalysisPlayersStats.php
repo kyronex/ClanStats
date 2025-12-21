@@ -8,14 +8,18 @@ use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\PlayerStats;
 use App\Dto\ClashRoyale\Analysis\Score;
 
+use App\Service\ClashRoyale\Analysis\AnalysisTools;
+
 use App\Enum\PlayerMetric;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 // TODO mise en place d'un carry factor
-class PlayersStats
+class AnalysisPlayersStats
 {
   private LoggerInterface $logger;
   private ParameterBagInterface $parameterBag;
+  private AnalysisTools $analysisTools;
+
   private const TARGETS_RANK = [
     "fameRank",
     "fameRankDown",
@@ -38,11 +42,12 @@ class PlayersStats
       "continuity"
     ]
   ];
-  public function __construct(ParameterBagInterface $parameterBag, LoggerInterface $logger)
+  public function __construct(ParameterBagInterface $parameterBag, LoggerInterface $logger, AnalysisTools $analysisTools)
   {
     $this->logger = $logger;
     $this->parameterBag = $parameterBag;
-    $this->logger->info("Initialisation de : class 'PlayersStats'.");
+    $this->analysisTools = $analysisTools;
+    $this->logger->info("Initialisation de : class 'AnalysisPlayersStats'.");
   }
 
   /**
@@ -52,7 +57,7 @@ class PlayersStats
    */
   public function getPlayersAnalysisStats($warsStats, $playersStats)
   {
-    $this->logger->info("Lancement de : class 'PlayersStats' function 'getPlayersAnalysisStats'.");
+    $this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getPlayersAnalysisStats'.");
     $playersAnalysisStats = [];
 
     foreach ($playersStats as $playerKey => $playerStats) {
@@ -87,7 +92,34 @@ class PlayersStats
       $data = $this->getScoreVariable($warsStats, $data);
       $playersAnalysisStats[$playerKey] = new PlayerStats($data);
     }
+    $warsStats = $this->updateMedianContinuityWarStat($warsStats, $playersAnalysisStats);
     return array_merge(["warsStats" => $warsStats], ["playersAnalysisStats" => $playersAnalysisStats]);
+  }
+
+  /**
+   * @param array<string, WarStatsHistoriqueClanWar> $warsStats
+   * @param array<string, PlayerStats> $playersStats
+   * @return  int
+   */
+  public function updateMedianContinuityWarStat($warsStats, $playersStats)
+  {
+    $warsDto = [];
+    foreach ($warsStats as $warKey => $warStats) {
+      $newWarStats = $warStats->toArray();
+      if ($warKey === "all") {
+        $warsDto[$warKey] = new WarStatsHistoriqueClanWar($newWarStats);
+        continue;
+      }
+      $scores = [];
+      foreach ($playersStats as $playerKey => $playerStats) {
+        if (!in_array($playerKey, $warStats->getPlayers())) continue;
+        $scores[] = $playerStats->getSeasonScoresFinal($warKey)->getContinuity() ?? 0;;
+      }
+
+      $newWarStats["medianContinuity"] = $this->getFieldsToRound("continuity", $this->analysisTools->calculateMedian($scores));
+      $warsDto[$warKey] = new WarStatsHistoriqueClanWar($newWarStats);
+    }
+    return $warsDto;
   }
 
   /**
@@ -96,7 +128,7 @@ class PlayersStats
    */
   public function getScoreNormalized($dataPlayer)
   {
-    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getScoreNormalized'.");
+    //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getScoreNormalized'.");
     $dataModified = $dataPlayer;
     $dataModified["scoresNormalized"] = [];
     foreach ($dataModified["scoresInitial"] as $warKey => $score) {
@@ -122,7 +154,7 @@ class PlayersStats
 
   public function getFieldsToRound($target, $value)
   {
-    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getFieldsToRound'.");
+    //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getFieldsToRound'.");
     $newValue = 0;
     if (in_array($target, self::FIELDS_TO_ROUND["ceil"])) {
       $newValue = ceil($value);
@@ -139,7 +171,7 @@ class PlayersStats
    */
   public function getScoreVariable($warsStats, $dataPlayer)
   {
-    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getScoreVariable'.");
+    //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getScoreVariable'.");
     $wsNats =  array_keys($warsStats);
     natsort($wsNats);
     $wsNats = array_reverse(array_values($wsNats));
@@ -185,7 +217,7 @@ class PlayersStats
    */
   public function getPreviousWar($warsStats,  $warKey)
   {
-    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getPreviousWar'.");
+    //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getPreviousWar'.");
     $previousWar = "";
     if (preg_match('/^(\d+)_(\d+)$/', $warKey, $matches)) {
       $session = $matches[1];
@@ -227,7 +259,7 @@ class PlayersStats
    */
   private function getScore(PlayerMetric $metric, $warStats, $playerStats, $warKey, $target, $data)
   {
-    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getScore'.");
+    //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getScore'.");
     $score = [];
     $score["pos" . ucfirst($target)] = ($data[$target][$warKey] - 1) / count($warStats->getPlayers()) * 100;
     $score[$target] = $metric->getValue($playerStats, $warKey) * $this->getPositionMultiplier($score["pos" . ucfirst($target)]);
@@ -235,7 +267,7 @@ class PlayersStats
   }
   public function getPositionMultiplier(float $position): float
   {
-    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getPositionMultiplier'.");
+    //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getPositionMultiplier'.");
     $range = $this->parameterBag->get("clash_royale.score.multiplier_max") - $this->parameterBag->get("clash_royale.score.multiplier_min");
     $positionRatio = $position / 100;
     return $this->parameterBag->get("clash_royale.score.multiplier_max") - ($positionRatio * $range);
@@ -251,7 +283,7 @@ class PlayersStats
    */
   private function getPosition(PlayerMetric $metric, $warsStats, $playersStats, $tagPlayer, $isDown = false)
   {
-    //$this->logger->info("Lancement de : class 'PlayersStats' function 'getPosition'.");
+    //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getPosition'.");
     $position = [];
     foreach ($warsStats as $warKey => $warStats) {
       if ($warKey !== "all") {

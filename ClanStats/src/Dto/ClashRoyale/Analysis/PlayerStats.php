@@ -168,6 +168,15 @@ class PlayerStats
     {
         return $this->scoresFinal;
     }
+    public function getSeasonScoresFinal($sessionId)
+    {
+        foreach ($this->scoresFinal as $score) {
+            if ($score->getSessionId() === $sessionId) {
+                return $score;
+            }
+        }
+        return null;
+    }
 
     public function toArray(): array
     {

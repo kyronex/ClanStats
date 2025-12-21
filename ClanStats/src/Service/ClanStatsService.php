@@ -7,7 +7,7 @@ use App\Service\ClanStatsTools;
 use App\Service\ClashRoyaleApi;
 use App\Service\ClashRoyale\ClashRoyaleResponseProcessor;
 use App\Service\ClashRoyale\ClashRoyaleWarTools;
-use App\Service\ClashRoyale\Analysis\PlayersStats;
+use App\Service\ClashRoyale\Analysis\AnalysisPlayersStats;
 
 use App\Dto\ClashRoyale\Clan;
 
@@ -17,10 +17,10 @@ class ClanStatsService
     private ClashRoyaleApi $apiClashRoyale;
     private ClashRoyaleResponseProcessor $clashRoyaleRespProcess;
     private ClashRoyaleWarTools $clashRoyaleWarTools;
-    private PlayersStats $playersStatsAnalysis;
+    private AnalysisPlayersStats $playersStatsAnalysis;
     private LoggerInterface $logger;
 
-    public function __construct(PlayersStats $playersStatsAnalysis, ClanStatsTools $clanStatsTools, ClashRoyaleApi $apiClashRoyale, ClashRoyaleResponseProcessor $clashRoyaleRespProcess, ClashRoyaleWarTools $clashRoyaleWarTools, LoggerInterface $logger)
+    public function __construct(AnalysisPlayersStats $playersStatsAnalysis, ClanStatsTools $clanStatsTools, ClashRoyaleApi $apiClashRoyale, ClashRoyaleResponseProcessor $clashRoyaleRespProcess, ClashRoyaleWarTools $clashRoyaleWarTools, LoggerInterface $logger)
     {
         $this->logger = $logger;
         $this->clanStatsTools = $clanStatsTools;

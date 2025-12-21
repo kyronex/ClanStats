@@ -11,22 +11,27 @@ use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\War;
 use App\Dto\ClashRoyale\Analysis\WarStatsHistoriqueClanWar;
 
+use App\Service\ClashRoyale\Analysis\AnalysisTools;
+
+
 use App\Enum\PlayerMetric;
 
 class ClashRoyaleWarTools
 {
     private LoggerInterface $logger;
     private SerializerInterface $serializer;
+    private AnalysisTools $analysisTools;
     private const TARGETS_STATS_WARS = [
         "fame",
         "boatAttacks",
         "decksUsed"
     ];
 
-    public function __construct(LoggerInterface $logger, SerializerInterface $serializer)
+    public function __construct(LoggerInterface $logger, SerializerInterface $serializer, AnalysisTools $analysisTools)
     {
         $this->logger = $logger;
         $this->serializer = $serializer;
+        $this->analysisTools = $analysisTools;
         $this->logger->info("Initialisation de : class 'ClashRoyaleWarTools'.");
     }
 
@@ -184,25 +189,12 @@ class ClashRoyaleWarTools
                 foreach ($warStat["players"] as $playerKey) {
                     $scores[] = $metric->getValue($playersDto[$playerKey], $warKey);
                 }
-                $median = $this->calculateMedian($scores);
+                $median = $this->analysisTools->calculateMedian($scores);
                 $medianKey = "median" . ucfirst($metric->value);
                 $warsStat[$warKey][$medianKey] = $median;
             }
         }
         return $warsStat;
-    }
-
-    private function calculateMedian(array $values): float
-    {
-        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'calculateMedian'.");
-        sort($values, SORT_NUMERIC);
-        $total = count($values);
-        $milieu = floor($total / 2);
-        if ($total % 2 === 0) {
-            return ($values[$milieu - 1] + $values[$milieu]) / 2;
-        } else {
-            return $values[$milieu];
-        }
     }
 
     private function updateReelWarStat(array $warStat, string $key, array $data): array
