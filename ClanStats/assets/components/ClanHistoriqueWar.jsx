@@ -6,8 +6,8 @@ import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 
 function ClanHistoriqueWar({ members = [], membersClan = [] }) {
   const componentRef = useRef(null);
-  const [showedMembers, setShowedMembers] = useState(new Set());
-  const hookTogSet = useToggleSet();
+  const { toggle: handleShowedMembers, has: isShowedMember, set: showedMembers } = useToggleSet();
+
   const [keysSort] = useState({
     tag: "Tag",
     name: "Name",
@@ -31,15 +31,6 @@ function ClanHistoriqueWar({ members = [], membersClan = [] }) {
       componentRef.current.focus();
     }
   }, []);
-
-  const handleShowedMembers = useCallback(
-    (id) => {
-      setShowedMembers((prev) => {
-        return hookTogSet.toggle(prev, id);
-      });
-    },
-    [hookTogSet]
-  );
 
   return (
     <div ref={componentRef} tabIndex={-1}>
@@ -73,7 +64,7 @@ function ClanHistoriqueWar({ members = [], membersClan = [] }) {
                 key={`${member.tag}-${index}`}
                 member={member}
                 handleShowedMembers={handleShowedMembers}
-                showedMembers={showedMembers}
+                isShowedMember={isShowedMember}
               />
             );
           })}
@@ -83,7 +74,7 @@ function ClanHistoriqueWar({ members = [], membersClan = [] }) {
   );
 }
 
-const MembersTable = memo(function MembersTable({ member, handleShowedMembers, showedMembers }) {
+const MembersTable = memo(function MembersTable({ member, handleShowedMembers, isShowedMember }) {
   const handleClick = () => handleShowedMembers(member.tag);
   return (
     <React.Fragment>
@@ -99,17 +90,16 @@ const MembersTable = memo(function MembersTable({ member, handleShowedMembers, s
         <td>{member.averageWarsDecksUsed}</td>
         <td>
           <button onClick={handleClick} type="button">
-            {showedMembers.has(member.tag) ? "📂" : "📁"}
+            {isShowedMember(member.tag) ? "📂" : "📁"}
           </button>
         </td>
       </tr>
-      {showedMembers.has(member.tag) && <MemberTable member={member} />}
+      {isShowedMember(member.tag) && <MemberTable member={member} />}
     </React.Fragment>
   );
 });
 
 const MemberTable = memo(function MemberTable({ member }) {
-  console.log("🔄 MemberTable render pour:", member.name);
   return (
     <tr>
       <td colSpan="9">
@@ -134,7 +124,6 @@ const MemberTable = memo(function MemberTable({ member }) {
 });
 
 const WarItem = memo(function WarItem({ war }) {
-  console.log("🔄 WarItem render pour:", war.warId);
   return (
     <tr>
       <td>{war.warId}</td>

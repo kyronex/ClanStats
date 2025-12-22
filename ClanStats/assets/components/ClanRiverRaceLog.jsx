@@ -7,15 +7,33 @@ import { BoutonSort } from "../hooks";
 import React, { useState, useEffect, useCallback, memo } from "react";
 
 function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
-  const hookHCW = useHistoriqueClanWar();
-  const hookCRRL = useClanRiverRaceLog();
-  const hookTS = useToggleSet();
+  const {
+    historiqueClanWar,
+    isLoading: isLoadingHCW,
+    errors: errorsHCW,
+    hasErrors: hasErrorsHCW,
+    clearErrors: clearErrorsHCW,
+  } = useHistoriqueClanWar();
+  const {
+    clanRiverRaceLog,
+    isLoading: isLoadingCRRL,
+    errors: errorsCRRL,
+    hasErrors: hasErrorsCRRL,
+    clearErrors: clearErrorsCRRL,
+  } = useClanRiverRaceLog();
+
+  const {
+    toggle: handleSelectedHistory,
+    has: isWarHistorySelected,
+    set: warsSelected,
+    replace: setWarsSelected,
+    clear: clearWarsSelected,
+  } = useToggleSet();
+  const { toggle: handleShowedRow, has: isShowedRow, set: showedRow } = useToggleSet();
 
   const [riverRaceLogData, setRiverRaceLogData] = useState(null);
 
   const [selectAll, setSelectAll] = useState(false);
-  const [warsSelected, setWarsSelected] = useState(new Set());
-  const [showedRow, setShowedRow] = useState(new Set());
 
   const handleSelectAll = () => {
     if (!riverRaceLogData || riverRaceLogData.length === 0) {
@@ -24,31 +42,13 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
     const currentlyAllSelected = warsSelected.size === riverRaceLogData.length;
     if (currentlyAllSelected) {
       setSelectAll(false);
-      setWarsSelected(new Set());
+      clearWarsSelected();
     } else {
       const allIds = riverRaceLogData.map((item) => `${item.seasonId}_${item.sectionIndex}`);
       setSelectAll(true);
       setWarsSelected(new Set(allIds));
     }
   };
-
-  const handleSelectedHistory = useCallback(
-    (id) => {
-      setWarsSelected((prev) => {
-        return hookTS.toggle(prev, id);
-      });
-    },
-    [hookTS]
-  );
-
-  const handleShowedRow = useCallback(
-    (id) => {
-      setShowedRow((prev) => {
-        return hookTS.toggle(prev, id);
-      });
-    },
-    [hookTS]
-  );
 
   useEffect(() => {
     if (riverRaceLogData && riverRaceLogData.length === warsSelected.size) {
@@ -64,31 +64,29 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
       console.warn({ general: "Veuillez choisir au moins une saison" });
       return;
     }
-    const result = await hookHCW.historiqueClanWar(clan, warsSelected, activeMembers, exMembers, taskId);
+    const result = await historiqueClanWar(clan, warsSelected, activeMembers, exMembers, taskId);
     if (result.success) {
-      console.log(`✅ Historique membres trouvés`);
-      hookHCW.clearErrors();
+      clearErrorsHCW;
     } else {
       console.log(`❌ Recherche échouée: ${result.message}`);
-      hookHCW.clearErrors();
+      clearErrorsHCW;
     }
   };
 
   useEffect(() => {
     let isCancelled = false;
     const fetchData = async () => {
-      const result = await hookCRRL.clanRiverRaceLog(clan);
+      const result = await clanRiverRaceLog(clan);
       if (isCancelled) {
-        console.log("⏹️ Requête annulée, ignorer le résultat");
         return;
       }
       if (result.success) {
         setRiverRaceLogData(result.data);
-        hookCRRL.clearErrors();
+        clearErrorsCRRL;
       } else {
         console.log(`❌ Recherche échouée: ${result.message}`);
         setRiverRaceLogData(null);
-        hookCRRL.clearErrors();
+        clearErrorsCRRL;
       }
     };
 
@@ -97,7 +95,6 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
     }
 
     return () => {
-      console.log("🛑 Annulation recherche clan");
       isCancelled = true;
     };
   }, [clan]);
@@ -119,7 +116,7 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
                 <th>
                   <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
                   <button onClick={handleHistoriqueClanWar} type="button">
-                    {hookHCW.isLoading ? "⏳ Chargement..." : "Historique"}
+                    {isLoadingHCW ? "⏳ Chargement..." : "Historique"}
                   </button>
                 </th>
               </tr>
@@ -132,8 +129,8 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
                     key={rowId}
                     riverRaceLog={riverRaceLog}
                     rowId={rowId}
-                    showedRow={showedRow}
-                    warsSelected={warsSelected}
+                    isShowedRow={isShowedRow}
+                    isWarHistorySelected={isWarHistorySelected}
                     handleShowedRow={handleShowedRow}
                     handleSelectedHistory={handleSelectedHistory}
                   />
@@ -149,7 +146,14 @@ function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
   );
 }
 
-const RiverRaceLog = memo(function RiverRaceLog({ riverRaceLog, rowId, showedRow, warsSelected, handleShowedRow, handleSelectedHistory }) {
+const RiverRaceLog = memo(function RiverRaceLog({
+  riverRaceLog,
+  rowId,
+  isShowedRow,
+  isWarHistorySelected,
+  handleShowedRow,
+  handleSelectedHistory,
+}) {
   const handleClick = () => handleShowedRow(rowId);
   const handleChange = () => handleSelectedHistory(rowId);
 
@@ -158,24 +162,24 @@ const RiverRaceLog = memo(function RiverRaceLog({ riverRaceLog, rowId, showedRow
       <tr>
         <td>
           <button onClick={handleClick} type="button">
-            {showedRow.has(rowId) ? "📂" : "📁"}
+            {isShowedRow(rowId) ? "📂" : "📁"}
           </button>
         </td>
         <td>{riverRaceLog.seasonId}</td>
         <td>{riverRaceLog.sectionIndex}</td>
         <td>{riverRaceLog.createdDate}</td>
         <td>
-          <input type="checkbox" value={rowId} checked={warsSelected.has(rowId)} onChange={handleChange} />
+          <input type="checkbox" value={rowId} checked={isWarHistorySelected(rowId)} onChange={handleChange} />
         </td>
       </tr>
-      {showedRow.has(rowId) && (
-        <TableClans key={rowId} riverRaceLog={riverRaceLog} rowId={rowId} handleShowedRow={handleShowedRow} showedRow={showedRow} />
+      {isShowedRow(rowId) && (
+        <TableClans key={rowId} riverRaceLog={riverRaceLog} rowId={rowId} handleShowedRow={handleShowedRow} isShowedRow={isShowedRow} />
       )}
     </React.Fragment>
   );
 });
 
-const TableClans = memo(function TableClans({ riverRaceLog, rowId, handleShowedRow, showedRow }) {
+const TableClans = memo(function TableClans({ riverRaceLog, rowId, handleShowedRow, isShowedRow }) {
   const [keysSort] = useState({
     name: "Nom",
     tag: "Tag",
@@ -211,7 +215,7 @@ const TableClans = memo(function TableClans({ riverRaceLog, rowId, handleShowedR
             {sortedData?.map((clan, index) => {
               const rowIdClan = `${rowId}_${clan.tag}-${index}`;
               return (
-                <TableClan key={rowIdClan} clan={clan} rowIdClan={rowIdClan} handleShowedRow={handleShowedRow} showedRow={showedRow} />
+                <TableClan key={rowIdClan} clan={clan} rowIdClan={rowIdClan} handleShowedRow={handleShowedRow} isShowedRow={isShowedRow} />
               );
             })}
           </tbody>
@@ -221,14 +225,14 @@ const TableClans = memo(function TableClans({ riverRaceLog, rowId, handleShowedR
   );
 });
 
-const TableClan = memo(function TableClan({ clan, rowIdClan, handleShowedRow, showedRow }) {
+const TableClan = memo(function TableClan({ clan, rowIdClan, handleShowedRow, isShowedRow }) {
   const handleClick = () => handleShowedRow(rowIdClan);
   return (
     <React.Fragment>
       <tr>
         <td>
           <button onClick={handleClick} type="button">
-            {showedRow.has(rowIdClan) ? "➖" : "➕"}
+            {isShowedRow(rowIdClan) ? "➖" : "➕"}
           </button>
         </td>
         <td>{clan.name}</td>
@@ -240,7 +244,7 @@ const TableClan = memo(function TableClan({ clan, rowIdClan, handleShowedRow, sh
         <td>{clan.finishTime}</td>
         <td>{clan.badgeId}</td>
       </tr>
-      {showedRow.has(rowIdClan) && <TableParticipants participants={clan.participants} rowIdClan={rowIdClan} />}
+      {isShowedRow(rowIdClan) && <TableParticipants participants={clan.participants} rowIdClan={rowIdClan} />}
     </React.Fragment>
   );
 });
