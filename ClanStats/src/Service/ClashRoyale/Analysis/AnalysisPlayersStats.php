@@ -14,12 +14,24 @@ use App\Enum\PlayerMetric;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 // TODO mise en place d'un carry factor
+
+/**
+ * Service d'analyse des statistiques des joueurs pour les guerres de clan.
+ *
+ * Calcule les scores, positions et métriques de performance des joueurs
+ * en tenant compte de la temporalité et de la continuité.
+ */
 class AnalysisPlayersStats
 {
   private LoggerInterface $logger;
   private ParameterBagInterface $parameterBag;
   private AnalysisTools $analysisTools;
 
+  /**
+   * Cibles de classement à analyser.
+   *
+   * @var array<int, string>
+   */
   private const TARGETS_RANK = [
     "fameRank",
     "fameRankDown",
@@ -29,6 +41,11 @@ class AnalysisPlayersStats
     "decksUsedRankDown"
   ];
 
+  /**
+   * Configuration de l'arrondi par type de métrique.
+   *
+   * @var array<string, array<int, string>>
+   */
   private const FIELDS_TO_ROUND = [
     "ceil" => [
       "fameRank",
@@ -42,6 +59,12 @@ class AnalysisPlayersStats
       "continuity"
     ]
   ];
+
+  /**
+   * @param ParameterBagInterface $parameterBag Gestionnaire de paramètres
+   * @param LoggerInterface $logger Logger Symfony
+   * @param AnalysisTools $analysisTools Outils d'analyse statistique
+   */
   public function __construct(ParameterBagInterface $parameterBag, LoggerInterface $logger, AnalysisTools $analysisTools)
   {
     $this->logger = $logger;
@@ -51,9 +74,14 @@ class AnalysisPlayersStats
   }
 
   /**
-   * @param array<string, WarStatsHistoriqueClanWar> $warsStats
-   * @param array<string, PlayerStatsHistoriqueClanWar> $playersStats
-   * @return array<string, mixed>
+   * Génère les statistiques d'analyse complètes pour tous les joueurs.
+   *
+   * Calcule les positions, scores initiaux, normalisés et finaux pour chaque
+   * joueur en tenant compte de la temporalité et de la continuité.
+   *
+   * @param array<string, WarStatsHistoriqueClanWar> $warsStats Statistiques des guerres
+   * @param array<string, PlayerStatsHistoriqueClanWar> $playersStats Statistiques des joueurs
+   * @return array{warsStats: array<string, WarStatsHistoriqueClanWar>, playersAnalysisStats: array<string, PlayerStats>}
    */
   public function getPlayersAnalysisStats($warsStats, $playersStats)
   {
@@ -97,9 +125,15 @@ class AnalysisPlayersStats
   }
 
   /**
-   * @param array<string, WarStatsHistoriqueClanWar> $warsStats
-   * @param array<string, PlayerStats> $playersStats
-   * @return  int
+   * Met à jour les médianes de continuité et normalise les métriques pour chaque guerre.
+   *
+   * Calcule la médiane de continuité pour chaque guerre en se basant sur les
+   * scores finaux des joueurs participants. Applique également les facteurs de
+   * normalisation sur les médianes d'attaques de bateaux et de decks utilisés.
+   *
+   * @param array<string, WarStatsHistoriqueClanWar> $warsStats Statistiques des guerres
+   * @param array<string, PlayerStats> $playersStats Statistiques analysées des joueurs
+   * @return array<string, WarStatsHistoriqueClanWar> Statistiques mises à jour
    */
   public function updateMedianContinuityWarStat($warsStats, $playersStats)
   {
@@ -125,8 +159,13 @@ class AnalysisPlayersStats
   }
 
   /**
-   * @param array $dataPlayer
-   * @return array
+   * Normalise les scores initiaux en appliquant les coefficients de normalisation.
+   *
+   * Applique les facteurs de normalisation configurés pour les métriques
+   * boatAttacks et decksUsed, puis arrondit selon la configuration.
+   *
+   * @param array{originalStats: PlayerStatsHistoriqueClanWar, scoresInitial: array<string, Score>} $dataPlayer Données du joueur
+   * @return array{originalStats: PlayerStatsHistoriqueClanWar, scoresInitial: array<string, Score>, scoresNormalized: array<string, Score>} Données avec scores normalisés
    */
   public function getScoreNormalized($dataPlayer)
   {
@@ -154,6 +193,16 @@ class AnalysisPlayersStats
     return $dataModified;
   }
 
+  /**
+   * Arrondit une valeur selon la stratégie définie pour la métrique cible.
+   *
+   * Applique ceil() pour les rangs montants et floor() pour les rangs
+   * descendants et la continuité.
+   *
+   * @param string $target Nom de la métrique (ex: "fameRank", "continuity")
+   * @param float $value Valeur à arrondir
+   * @return int Valeur arrondie
+   */
   public function getFieldsToRound($target, $value)
   {
     //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getFieldsToRound'.");
@@ -167,9 +216,14 @@ class AnalysisPlayersStats
   }
 
   /**
-   * @param array<string, WarStatsHistoriqueClanWar> $warsStats
-   * @param array $dataPlayer
-   * @return array<string, int>
+   * Calcule les scores finaux en appliquant les multiplicateurs temporels et de continuité.
+   *
+   * Applique un coefficient temporel décroissant aux guerres récentes et calcule
+   * la continuité basée sur la participation aux guerres précédentes.
+   *
+   * @param array<string, WarStatsHistoriqueClanWar> $warsStats Statistiques des guerres
+   * @param array{scoresNormalized: array<string, Score>} $dataPlayer Données du joueur avec scores normalisés
+   * @return array{scoresNormalized: array<string, Score>, scoresFinal: array<string, Score>} Données avec scores finaux
    */
   public function getScoreVariable($warsStats, $dataPlayer)
   {
@@ -213,9 +267,14 @@ class AnalysisPlayersStats
   }
 
   /**
-   * @param array<string, int> $warsStats
-   * @param string $warKey
-   * @return string
+   * Trouve la clé de la guerre précédente dans la chronologie.
+   *
+   * Gère le passage d'une section à l'autre et d'une saison à l'autre.
+   * Format attendu: "{saison}_{section}" (ex: "2024_3")
+   *
+   * @param array<string, float> $warsStats Statistiques des guerres avec multiplicateurs
+   * @param string $warKey Clé de la guerre actuelle (format: "saison_section")
+   * @return string Clé de la guerre précédente ou chaîne vide si non trouvée
    */
   public function getPreviousWar($warsStats,  $warKey)
   {
@@ -251,13 +310,15 @@ class AnalysisPlayersStats
   }
 
   /**
-   * @param PlayerMetric $metric
-   * @param WarStatsHistoriqueClanWar $warStats
-   * @param PlayerStatsHistoriqueClanWar $playerStats
-   * @param string $warKey
-   * @param string $target
-   * @param array $data
-   * @return array<string, float>
+   * Calcule le score pour une métrique spécifique en appliquant le multiplicateur de position.
+   *
+   * @param PlayerMetric $metric Type de métrique à calculer
+   * @param WarStatsHistoriqueClanWar $warStats Statistiques de la guerre
+   * @param PlayerStatsHistoriqueClanWar $playerStats Statistiques du joueur
+   * @param string $warKey Identifiant de la guerre
+   * @param string $target Nom de la cible de score (ex: "fameRank")
+   * @param array{fameRank: array<string, int>, boatAttacksRank: array<string, int>, decksUsedRank: array<string, int>} $data Données de position précalculées
+   * @return array{pos[Target]: float, [target]: float} Score calculé avec sa position normalisée
    */
   private function getScore(PlayerMetric $metric, $warStats, $playerStats, $warKey, $target, $data)
   {
@@ -267,6 +328,16 @@ class AnalysisPlayersStats
     $score[$target] = $metric->getValue($playerStats, $warKey) * $this->getPositionMultiplier($score["pos" . ucfirst($target)]);
     return $score;
   }
+
+  /**
+   * Calcule le multiplicateur de score basé sur la position du joueur.
+   *
+   * Applique une interpolation linéaire entre multiplier_max (pour les meilleurs)
+   * et multiplier_min (pour les moins bons).
+   *
+   * @param float $position Position normalisée du joueur (0-100%)
+   * @return float Multiplicateur de score (entre multiplier_min et multiplier_max)
+   */
   public function getPositionMultiplier(float $position): float
   {
     //$this->logger->info("Lancement de : class 'AnalysisPlayersStats' function 'getPositionMultiplier'.");
@@ -276,12 +347,17 @@ class AnalysisPlayersStats
   }
 
   /**
+   * Calcule la position d'un joueur pour une métrique donnée dans une guerre.
+   *
+   * Compare la valeur du joueur avec celle de tous les autres participants
+   * pour déterminer son classement.
+   *
    * @param PlayerMetric $metric La métrique à analyser
-   * @param array<string, WarStatsHistoriqueClanWar> $warsStats
-   * @param array<string, PlayerStatsHistoriqueClanWar> $playersStats
-   * @param string $tagPlayer
-   * @param bool $isDown
-   * @return array<string, int>
+   * @param array<string, WarStatsHistoriqueClanWar> $warsStats Statistiques des guerres
+   * @param array<string, PlayerStatsHistoriqueClanWar> $playersStats Statistiques de tous les joueurs
+   * @param string $tagPlayer Tag du joueur à analyser
+   * @param bool $isDown Si true, égalité compte comme meilleur (pour rangs descendants)
+   * @return array<string, int> Positions par guerre (warKey => position)
    */
   private function getPosition(PlayerMetric $metric, $warsStats, $playersStats, $tagPlayer, $isDown = false)
   {

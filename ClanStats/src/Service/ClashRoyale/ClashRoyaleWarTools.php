@@ -13,9 +13,18 @@ use App\Dto\ClashRoyale\Analysis\WarStatsHistoriqueClanWar;
 
 use App\Service\ClashRoyale\Analysis\AnalysisTools;
 
-
 use App\Enum\PlayerMetric;
 
+/**
+ * Gestionnaire des opérations de filtrage et d'analyse des guerres de clan.
+ *
+ * Responsabilités :
+ * - Filtrage des guerres par saison et clan spécifique
+ * - Extraction et agrégation des statistiques de participants
+ * - Calcul de métriques (totaux, moyennes, min/max réels, médianes)
+ * - Transformation de données brutes en DTOs typés pour l'analyse
+ *
+ */
 class ClashRoyaleWarTools
 {
     private LoggerInterface $logger;
@@ -27,6 +36,13 @@ class ClashRoyaleWarTools
         "decksUsed"
     ];
 
+    /**
+     * Initialise le gestionnaire avec dépendances pour sérialisation et calculs statistiques.
+     *
+     * @param LoggerInterface $logger Logger Symfony pour traçabilité des opérations
+     * @param SerializerInterface $serializer Serializer Symfony pour transformation DTO → JSON → Array
+     * @param AnalysisTools $analysisTools Service d'analyse pour calculs de médianes
+     */
     public function __construct(LoggerInterface $logger, SerializerInterface $serializer, AnalysisTools $analysisTools)
     {
         $this->logger = $logger;
@@ -35,6 +51,14 @@ class ClashRoyaleWarTools
         $this->logger->info("Initialisation de : class 'ClashRoyaleWarTools'.");
     }
 
+    /**
+     * Filtre les guerres selon une liste de saisons sélectionnées.
+     *
+     * @param array<int, string> $warsSelected Liste des identifiants de guerre au format "{seasonId}_{sectionIndex}"
+     * @param array<int, RiverRaceLog> $riverRaceLog Historique complet des guerres de rivière
+     *
+     * @return array<int, RiverRaceLog> Guerres filtrées correspondant aux saisons demandées
+     */
     public function processGetWarsSelected(array $warsSelected, array $riverRaceLog)
     {
         $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsSelected'.");
@@ -47,6 +71,25 @@ class ClashRoyaleWarTools
         return $warsFiltered;
     }
 
+    /**
+     * Extrait les guerres concernant un clan spécifique avec restructuration des données.
+     *
+     * Processus de transformation :
+     * 1. Localise le clan dans chaque guerre (standings)
+     * 2. Sérialise les données avec groupes de normalisation :
+     *    - "riverRaceLogInfo" : Métadonnées de la guerre (saison, date)
+     *    - "clanInfoFlat" : Stats du clan (fame, trophies)
+     *    - "clanInfoDeep" : Infos détaillées du clan
+     *    - "ajaxed" : Participants avec statistiques
+     * 3. Reconstruit un RiverRaceLog contenant uniquement ce clan
+     *
+     * Résultat : Chaque guerre ne contient qu'un seul standing (celui du clan demandé)
+     *
+     * @param string $clanTag Tag du clan à extraire
+     * @param array<int, RiverRaceLog> $riverRaceLog Historique complet avec tous les clans
+     *
+     * @return array<int, RiverRaceLog> Guerres filtrées et restructurées (1 standing par guerre)
+     */
     public function processGetWarsByClan(string $clanTag, array $riverRaceLog)
     {
         $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsByClan'.");
@@ -72,6 +115,20 @@ class ClashRoyaleWarTools
         return $warsFiltered;
     }
 
+    /**
+     * Agrège les statistiques de tous les participants aux guerres avec distinction actifs/anciens.
+     *
+     * Calculs effectués par joueur :
+     * - Totaux : totalWarsFame, totalWarsBoatAttacks, totalWarsDecksUsed
+     * - Moyennes : averageWarsFame, averageWarsBoatAttacks, averageWarsDecksUsed
+     * - Participation : totalWarsParticipated (nombre de guerres jouées)
+     * - Statut : currentPlayer (true si membre actuel du clan)
+     *
+     * @param Clan $currentClan Clan actuel avec liste des membres pour déterminer le statut
+     * @param array<int, RiverRaceLog> $riverRaceLog Historique complet des guerres à analyser
+     *
+     * @return array{activeMembers: array<string, array>, exMembers: array<string, array>} Statistiques agrégées séparées par statut
+     */
     public function processGetWarsPlayersStats(Clan $currentClan, array $riverRaceLog)
     {
         $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsPlayersStats'.");
@@ -124,6 +181,14 @@ class ClashRoyaleWarTools
         ];
     }
 
+    /**
+     * Génère les statistiques complètes des guerres avec métriques agrégées et transformations DTO.
+     *
+     * @param array<string, array<string, mixed>> $playersStats Statistiques brutes des joueurs (structure de processGetWarsPlayersStats)
+     * @param array<int, string> $warsSelected Liste des identifiants de guerre à analyser (format "{seasonId}_{sectionIndex}")
+     *
+     * @return array{warsStats: array<string, WarStatsHistoriqueClanWar>, playersStats: array<string, PlayerStatsHistoriqueClanWar>} Statistiques complètes transformées en DTOs
+     */
     public function processGetStatsHistoriqueClanWar(array $playersStats, array $warsSelected): array
     {
         $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetStatsHistoriqueClanWar'.");
@@ -175,10 +240,19 @@ class ClashRoyaleWarTools
     }
 
     /**
-     * @param PlayerMetric $metric La métrique à analyser
-     * @param WarStatsHistoriqueClanWar> $warsStats
-     * @param  PlayerStatsHistoriqueClanWar $playersStats
-     * @return array<string, int>
+     * Calcule et injecte les médianes d'une métrique spécifique pour chaque guerre.
+     *
+     * Algorithme :
+     * 1. Pour chaque guerre (sauf "all")
+     * 2. Extrait les scores de tous les joueurs pour la métrique
+     * 3. Calcule la médiane via AnalysisTools::calculateMedian()
+     * 4. Stocke dans "median{Metric}" (ex: medianFame)
+     *
+     * @param PlayerMetric $metric Métrique à analyser
+     * @param array<string, array<string, mixed>> $warsStat Statistiques des guerres à enrichir
+     * @param array<string, PlayerStatsHistoriqueClanWar> $playersDto DTOs des joueurs avec historique de guerres
+     *
+     * @return array<string, array<string, mixed>> Statistiques enrichies avec médianes calculées
      */
     private function updateMedianWarStat(PlayerMetric $metric, array $warsStat,  array $playersDto)
     {
@@ -197,6 +271,15 @@ class ClashRoyaleWarTools
         return $warsStat;
     }
 
+    /**
+     * Met à jour les min/max réels d'une guerre et de la vue globale ("all").
+     *
+     * @param array<string, array<string, mixed>> $warStat Statistiques des guerres (dont "all")
+     * @param string $key Identifiant de la guerre (format "{seasonId}_{sectionIndex}")
+     * @param array<string, mixed> $data Données du participant avec tag, fame, boatAttacks, decksUsed
+     *
+     * @return array<string, array<string, mixed>> Statistiques mises à jour
+     */
     private function updateReelWarStat(array $warStat, string $key, array $data): array
     {
         //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateReelWarStat'.");
