@@ -2,7 +2,7 @@ import { useTableSort } from "../hooks";
 import { BoutonSort } from "../hooks";
 import React, { useState } from "react";
 
-function ClanSearchResult({ clans = [], onClanSelect }) {
+function ClanSearchResult({ clans, onClanSelect }) {
   if (!clans || clans.length === 0) {
     return (
       <div>

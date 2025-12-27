@@ -15,7 +15,7 @@ import {
 } from "chart.js";
 
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
-const useChartCompare = (warsData = {}, filteredData = {}, warsSelected = {}) => {
+const useChartComparePlayers = (warsStats = {}, filteredData = {}, warsSelected = {}) => {
   const createColorSetting = (r, g, b) => ({
     radar: {
       backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
@@ -86,7 +86,7 @@ const useChartCompare = (warsData = {}, filteredData = {}, warsSelected = {}) =>
     }, 50);
   };
 
-  const isEmpty = Object.keys(filteredData).length === 0 || !currentWar || Object.keys(warsData).length === 0;
+  const isEmpty = Object.keys(filteredData).length === 0 || !currentWar || Object.keys(warsStats).length === 0;
 
   const { formatedScoreData, formatedTopData, dynamicMaxScore } = useMemo(() => {
     if (isEmpty) {
@@ -110,7 +110,7 @@ const useChartCompare = (warsData = {}, filteredData = {}, warsSelected = {}) =>
     for (const [target, label] of Object.entries(LABEL_SCORE)) {
       let newTarget = target.replace("Rank", "");
       newTarget = "median" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
-      const value = warsData[currentWar][newTarget] || 0;
+      const value = warsStats[currentWar][newTarget] || 0;
       datasetsMap[target].push(value);
       playerValuesScore["Mediane"] += value;
     }
@@ -314,4 +314,4 @@ const useChartCompare = (warsData = {}, filteredData = {}, warsSelected = {}) =>
   };
 };
 
-export default useChartCompare;
+export default useChartComparePlayers;

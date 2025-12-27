@@ -4,7 +4,7 @@ import { BoutonSort } from "../hooks";
 
 import React, { useState, useEffect } from "react";
 
-function ClanInfo({ clan = {} }) {
+function ClanInfo({ clan }) {
   const [clanData, setClanData] = useState({
     membersList: [],
   });

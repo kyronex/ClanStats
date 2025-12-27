@@ -6,7 +6,7 @@ import { BoutonSort } from "../hooks";
 
 import React, { useState, useEffect, useCallback, memo } from "react";
 
-function ClanRiverRaceLog({ clan = {}, activeMembers, exMembers, taskId }) {
+function ClanRiverRaceLog({ clan, activeMembers, exMembers, taskId }) {
   const {
     historiqueClanWar,
     isLoading: isLoadingHCW,

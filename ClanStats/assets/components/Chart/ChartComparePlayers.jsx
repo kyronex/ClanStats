@@ -1,11 +1,11 @@
 import React from "react";
-import { useChartCompare } from "../hooks";
+import { useChartComparePlayers } from "../../hooks";
 
 import { Radar, Bar } from "react-chartjs-2";
 
-const ChartStatsHistoriqueWar = ({ warsData = {}, filteredData = {}, playersSelected = {}, warsSelected = [] }) => {
-  const { chartRefScore, chartRefTop, optionsScore, optionsTop, formatedScoreData, formatedTopData, isEmpty } = useChartCompare(
-    warsData,
+const ChartComparePlayers = ({ warsStats, filteredData, playersSelected, warsSelected }) => {
+  const { chartRefScore, chartRefTop, optionsScore, optionsTop, formatedScoreData, formatedTopData, isEmpty } = useChartComparePlayers(
+    warsStats,
     filteredData,
     warsSelected
   );
@@ -27,4 +27,4 @@ const ChartStatsHistoriqueWar = ({ warsData = {}, filteredData = {}, playersSele
   );
 };
 
-export default ChartStatsHistoriqueWar;
+export default ChartComparePlayers;

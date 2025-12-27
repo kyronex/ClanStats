@@ -4,7 +4,7 @@ import { BoutonSort } from "../hooks";
 
 import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 
-function ClanHistoriqueWar({ members = [], membersClan = [] }) {
+function ClanHistoriqueWar({ members, membersClan }) {
   const componentRef = useRef(null);
   const { toggle: handleShowedMembers, has: isShowedMember, set: showedMembers } = useToggleSet();
 

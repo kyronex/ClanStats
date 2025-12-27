@@ -23,8 +23,8 @@ function ClanStatsContainer() {
   const [selectedClan, setSelectedClan] = useState(null);
   const [activeMembers, setActiveMembers] = useState([]);
   const [exMembers, setExMembers] = useState([]);
-  //const [taskId, setTaskId] = useState("dataTask_#QPJC0JG9_694c3f39861de3.20316030");
-  const [taskId, setTaskId] = useState([]);
+  const [taskId, setTaskId] = useState("dataTask_#QPJC0JG9_694c3f39861de3.20316030");
+  //const [taskId, setTaskId] = useState([]);
 
   useEffect(() => {
     console.log("⭐ useEffect app.js [activeMembers, exMembers]");

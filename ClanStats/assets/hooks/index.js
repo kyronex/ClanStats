@@ -10,7 +10,7 @@ export { default as useHistoriqueClanWar } from "./links/useHistoriqueClanWar";
 export { default as useClanRiverRaceLog } from "./links/useClanRiverRaceLog";
 export { default as useClanStatsHistoriqueWar } from "./links/useClanStatsHistoriqueWar";
 export { default as useChartFilter } from "./links/useChartFilter";
-export { default as useChartCompare } from "./links/useChartCompare";
+export { default as useChartComparePlayers } from "./links/useChartComparePlayers.js";
 
 // 🎨 Common Hooks
 export { default as BoutonSort } from "./common/BoutonSort.jsx";
