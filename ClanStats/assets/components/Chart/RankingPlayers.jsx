@@ -1,30 +1,27 @@
 import ChartComparePlayers from "./ChartComparePlayers.jsx";
-import SelectorComparePlayers from "./SelectorComparePlayers.jsx";
-import { useToggleSet } from "../../hooks";
-import { useChartFilter } from "../../hooks";
-import React, { memo } from "react";
+import SelectorByWar from "./SelectorByWar.jsx";
+import React, { useState, useCallback } from "react";
 const RankingPlayers = ({ rData }) => {
-  const { toggle: handleSelectedPlayer, has: isPlayersSelected, set: playersSelected } = useToggleSet([], { maxSize: 5 });
-  const { toggle: handleSelectedWar, has: isWarsSelected, set: warsSelected } = useToggleSet([], { maxSize: 1 });
-  const { filteredData } = useChartFilter(playersSelected, warsSelected, rData?.data.playersAnalysisStats, rData?.data.warsStats);
+  const [filteredPlayers, setFilteredPlayers] = useState({});
+  const [warsSelected, setWarsSelected] = useState({});
 
+  const handlePlayersSelect = useCallback((players) => {
+    setFilteredPlayers(players);
+  }, []);
+
+  const handleWarSelect = useCallback((wars) => {
+    setWarsSelected(wars);
+  }, []);
   const playersAnalysisStats = rData?.data.playersAnalysisStats;
   const warsStats = rData?.data.warsStats;
   return (
     <React.Fragment>
-      <ChartComparePlayers
-        warsStats={warsStats}
-        filteredData={filteredData}
-        playersSelected={playersSelected}
-        warsSelected={warsSelected}
-      />
-      <SelectorComparePlayers
+      <ChartComparePlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
+      <SelectorByWar
         playersAnalysisStats={playersAnalysisStats}
         warsStats={warsStats}
-        isWarsSelected={isWarsSelected}
-        handleSelectedWar={handleSelectedWar}
-        isPlayersSelected={isPlayersSelected}
-        handleSelectedPlayer={handleSelectedPlayer}
+        handlePlayersSelect={handlePlayersSelect}
+        handleWarSelect={handleWarSelect}
       />
     </React.Fragment>
   );

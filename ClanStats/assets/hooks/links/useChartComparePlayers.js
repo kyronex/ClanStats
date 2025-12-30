@@ -15,7 +15,7 @@ import {
 } from "chart.js";
 
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
-const useChartComparePlayers = (warsStats = {}, filteredData = {}, warsSelected = {}) => {
+const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
   const createColorSetting = (r, g, b) => ({
     radar: {
       backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
@@ -86,7 +86,11 @@ const useChartComparePlayers = (warsStats = {}, filteredData = {}, warsSelected 
     }, 50);
   };
 
-  const isEmpty = Object.keys(filteredData).length === 0 || !currentWar || Object.keys(warsStats).length === 0;
+  const isEmpty =
+    Object.keys(filteredData).length === 0 ||
+    !currentWar ||
+    Object.keys(warsStats).length === 0 ||
+    Object.values(filteredData).some((v) => v === undefined);
 
   const { formatedScoreData, formatedTopData, dynamicMaxScore } = useMemo(() => {
     if (isEmpty) {
@@ -121,7 +125,6 @@ const useChartComparePlayers = (warsStats = {}, filteredData = {}, warsSelected 
       if (!playerValuesScore[playerTag]) {
         playerValuesScore[playerTag] = 0;
       }
-
       labels.push(playerData.originalStats.name);
       for (const [target, label] of Object.entries(LABEL_SCORE)) {
         const value = warStats[target] || 0;
@@ -141,7 +144,6 @@ const useChartComparePlayers = (warsStats = {}, filteredData = {}, warsSelected 
     });
 
     const roundedMax = calculateOptimalMaxScoreChart(playerValuesScore); //Math.max(...Object.values(playerValuesScore));
-
     const datasTop = Object.entries(filteredData)
       .map(([key, data], index) => {
         const colorIndex = index % 5;

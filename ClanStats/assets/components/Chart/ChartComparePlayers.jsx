@@ -3,7 +3,7 @@ import { useChartComparePlayers } from "../../hooks";
 
 import { Radar, Bar } from "react-chartjs-2";
 
-const ChartComparePlayers = ({ warsStats, filteredData, playersSelected, warsSelected }) => {
+const ChartComparePlayers = ({ warsStats, filteredData, warsSelected }) => {
   const { chartRefScore, chartRefTop, optionsScore, optionsTop, formatedScoreData, formatedTopData, isEmpty } = useChartComparePlayers(
     warsStats,
     filteredData,

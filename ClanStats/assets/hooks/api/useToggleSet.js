@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 const useToggleSet = (initialItems = [], options = {}) => {
   const [set, setSet] = useState(() => new Set(initialItems));
   const { maxSize } = options;
@@ -25,12 +25,18 @@ const useToggleSet = (initialItems = [], options = {}) => {
   const clear = useCallback(() => {
     setSet(new Set());
   }, []);
+
+  const hash = useMemo(() => {
+    return Array.from(set).sort().join(",");
+  }, [set]);
+
   return {
     toggle,
     has,
     set,
     replace,
     clear,
+    hash,
   };
 };
 
