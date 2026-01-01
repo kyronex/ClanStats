@@ -21,8 +21,8 @@ const RankingPlayers = ({ rData }) => {
         warsStats={warsStats}
         handlePlayersSelect={handlePlayersSelect}
         handleWarSelect={handleWarSelect}
-        maxPlayers={5}
-        maxWars={1}
+        maxPlayers={null}
+        maxWars={null}
         enablePlayerSelectAll={true}
         enableWarSelectAll={false}
       />

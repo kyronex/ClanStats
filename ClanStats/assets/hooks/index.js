@@ -9,10 +9,9 @@ export { default as useClanInfo } from "./links/useClanInfo";
 export { default as useHistoriqueClanWar } from "./links/useHistoriqueClanWar";
 export { default as useClanRiverRaceLog } from "./links/useClanRiverRaceLog";
 export { default as useClanStatsHistoriqueWar } from "./links/useClanStatsHistoriqueWar";
-// export { default as useChartFilter } from "./links/useChartFilter"; TODO delete
-export { default as useChartComparePlayers } from "./links/useChartComparePlayers.js";
-export { default as useChartRankingPlayers } from "./links/useChartRankingPlayers.js";
-export { default as useChartPlayerByWar } from "./links/useChartPlayerByWar.js";
+export { default as useChartComparePlayers } from "./links/Chart/useChartComparePlayers";
+export { default as useChartRankingPlayers } from "./links/Chart/useChartRankingPlayers";
+export { default as useSelectorByWar } from "./links/Chart/useSelectorByWar";
 
 // 🎨 Common Hooks
 export { default as BoutonSort } from "./common/BoutonSort.jsx";

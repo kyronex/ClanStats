@@ -1,6 +1,6 @@
 import React from "react";
 import { useChartRankingPlayers } from "../../hooks";
-
+//TODO faire la configuration des graphiques
 import { Radar, Bar, Line } from "react-chartjs-2";
 const ChartRankingPlayers = ({ warsStats, filteredData, warsSelected }) => {
   const { chartRefScore, chartRefTop, optionsScore, optionsTop, formatedScoreData, formatedTopData, isEmpty } = useChartRankingPlayers(

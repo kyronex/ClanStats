@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-const useChartPlayerByWar = (warsSelected, playersSelected, warsStats, playersAnalysisStats) => {
+const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnalysisStats) => {
   //const currentWar = Array.from(warsSelected)[0];
   const currentWar = useMemo(() => (warsSelected.size > 0 ? Array.from(warsSelected)[0] : null), [warsSelected]);
 
@@ -63,4 +63,4 @@ const useChartPlayerByWar = (warsSelected, playersSelected, warsStats, playersAn
   };
 };
 
-export default useChartPlayerByWar;
+export default useSelectorByWar;

@@ -21,6 +21,10 @@ const ComparePlayers = ({ rData }) => {
         warsStats={warsStats}
         handlePlayersSelect={handlePlayersSelect}
         handleWarSelect={handleWarSelect}
+        maxPlayers={5}
+        maxWars={1}
+        enablePlayerSelectAll={true}
+        enableWarSelectAll={false}
       />
       <ChartComparePlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
     </React.Fragment>

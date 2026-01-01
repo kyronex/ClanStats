@@ -1,5 +1,5 @@
 import { useToggleSet } from "../../hooks";
-import { useChartPlayerByWar } from "../../hooks";
+import { useSelectorByWar } from "../../hooks";
 import React, { memo, useEffect, useRef, useState } from "react";
 
 const SelectorByWar = ({
@@ -16,24 +16,24 @@ const SelectorByWar = ({
   const warsToggleOptions = maxWars ? { maxSize: maxWars } : {};
   playersAnalysisStats = Object.entries(playersAnalysisStats);
   const {
-    toggle: handleSelectedPlayer,
-    has: isPlayersSelected,
     set: playersSelected,
+    hash: playersSelectedHash,
+    has: isPlayersSelected,
+    toggle: handleSelectedPlayer,
     replace: replacePlayersSelected,
     clear: clearPlayersSelected,
-    hash: playersSelectedHash,
   } = useToggleSet([], playersToggleOptions);
 
   const {
-    toggle: handleSelectedWar,
-    has: isWarsSelected,
     set: warsSelected,
+    hash: warsSelectedHash,
+    has: isWarsSelected,
+    toggle: handleSelectedWar,
     replace: replaceWarsSelected,
     clear: clearWarsSelected,
-    hash: warsSelectedHash,
   } = useToggleSet([], warsToggleOptions);
 
-  const { currentWar, selectablePlayers, filteredPlayers, getValidSelectedPlayers } = useChartPlayerByWar(
+  const { currentWar, selectablePlayers, filteredPlayers, getValidSelectedPlayers } = useSelectorByWar(
     warsSelected,
     playersSelected,
     warsStats,
