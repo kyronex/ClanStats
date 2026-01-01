@@ -17,6 +17,7 @@ function ClanStatsHistoriqueWar({ taskId }) {
   if (status === "completed") {
     return (
       <React.Fragment>
+        <RankingPlayers rData={rData} />
         <ComparePlayers rData={rData} />
       </React.Fragment>
     );

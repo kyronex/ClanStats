@@ -2,7 +2,7 @@ import { useToggleSet } from "../hooks";
 import { useTableSort } from "../hooks";
 import { BoutonSort } from "../hooks";
 
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import React, { useState, useEffect, useRef, memo } from "react";
 
 function ClanHistoriqueWar({ members, membersClan }) {
   const componentRef = useRef(null);

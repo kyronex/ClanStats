@@ -1,4 +1,4 @@
-import ChartComparePlayers from "./ChartComparePlayers.jsx";
+import ChartRankingPlayers from "./ChartRankingPlayers.jsx";
 import SelectorByWar from "./SelectorByWar.jsx";
 import React, { useState, useCallback } from "react";
 const RankingPlayers = ({ rData }) => {
@@ -16,13 +16,17 @@ const RankingPlayers = ({ rData }) => {
   const warsStats = rData?.data.warsStats;
   return (
     <React.Fragment>
-      <ChartComparePlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
       <SelectorByWar
         playersAnalysisStats={playersAnalysisStats}
         warsStats={warsStats}
         handlePlayersSelect={handlePlayersSelect}
         handleWarSelect={handleWarSelect}
+        maxPlayers={5}
+        maxWars={1}
+        enablePlayerSelectAll={true}
+        enableWarSelectAll={false}
       />
+      <ChartRankingPlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
     </React.Fragment>
   );
 };

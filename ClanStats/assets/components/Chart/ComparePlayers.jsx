@@ -16,13 +16,13 @@ const ComparePlayers = ({ rData }) => {
   const warsStats = rData?.data.warsStats;
   return (
     <React.Fragment>
-      <ChartComparePlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
       <SelectorByWar
         playersAnalysisStats={playersAnalysisStats}
         warsStats={warsStats}
         handlePlayersSelect={handlePlayersSelect}
         handleWarSelect={handleWarSelect}
       />
+      <ChartComparePlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
     </React.Fragment>
   );
 };

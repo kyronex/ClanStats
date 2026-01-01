@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useCallback, useMemo } from "react";
 const useChartPlayerByWar = (warsSelected, playersSelected, warsStats, playersAnalysisStats) => {
   //const currentWar = Array.from(warsSelected)[0];
   const currentWar = useMemo(() => (warsSelected.size > 0 ? Array.from(warsSelected)[0] : null), [warsSelected]);

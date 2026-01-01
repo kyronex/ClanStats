@@ -1,10 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useMemo } from "react";
 const useChartFilter = (playersSelected, warsSelected, playersAnalysisStats, warsStats) => {
-  const handleShowData = useCallback((data) => {
-    console.log(`handleShowData`);
-    console.log(data);
-  }, []);
-
   const filteredData = useMemo(() => {
     let processedData = {};
     if (!playersAnalysisStats) return processedData;
