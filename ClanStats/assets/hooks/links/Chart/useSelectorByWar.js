@@ -1,30 +1,30 @@
 import { useCallback, useMemo } from "react";
 const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnalysisStats) => {
-  //const currentWar = Array.from(warsSelected)[0];
   const currentWar = useMemo(() => (warsSelected.size > 0 ? Array.from(warsSelected)[0] : null), [warsSelected]);
 
   const selectablePlayers = useMemo(() => {
     const processedData = {};
     if (!playersAnalysisStats) return processedData;
     if (!warsStats) return processedData;
-    if (warsSelected.size === 0) return processedData;
-    if (!warsStats[currentWar].players) return processedData;
+    if (!currentWar) return processedData;
+    if (!warsStats[currentWar]?.players) return processedData;
 
     for (const playerTag of warsStats[currentWar].players) {
       if (processedData[playerTag]) continue;
-      const playerStats = playersAnalysisStats.find(([key]) => key === playerTag)?.[1];
+      const playerStats = playersAnalysisStats[playerTag];
+      //const playerStats = playersAnalysisStats.find(([key]) => key === playerTag)?.[1];
       if (playerStats?.scoresFinal?.[currentWar]) {
         processedData[playerTag] = playerStats;
       }
     }
     return processedData;
-  }, [currentWar, warsStats, warsSelected, playersAnalysisStats]);
+  }, [currentWar, warsStats, playersAnalysisStats]);
 
   const filteredPlayers = useMemo(() => {
     let processedData = {};
     if (!playersAnalysisStats) return processedData;
     if (!warsStats) return processedData;
-    if (warsSelected.size === 0) return processedData;
+    if (!currentWar) return processedData;
     if (playersSelected.size === 0) return processedData;
 
     for (const playerTag of playersSelected) {
@@ -34,7 +34,7 @@ const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnaly
       }
     }
     return processedData;
-  }, [playersAnalysisStats, warsStats, playersSelected, warsSelected, selectablePlayers]);
+  }, [currentWar, warsStats, playersAnalysisStats, playersSelected, selectablePlayers]);
 
   const getValidSelectedPlayers = useCallback(
     (playerTagsSet = null) => {
@@ -63,4 +63,4 @@ const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnaly
   };
 };
 
-export default useSelectorByWar;
+export { useSelectorByWar };

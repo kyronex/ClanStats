@@ -1,5 +1,4 @@
-import { useToggleSet } from "../../hooks";
-import { useSelectorByWar } from "../../hooks";
+import { useToggleSet, useSelectorByWar } from "../hooks";
 import React, { memo, useEffect, useRef, useState } from "react";
 
 const SelectorByWar = ({
@@ -14,7 +13,6 @@ const SelectorByWar = ({
 }) => {
   const playersToggleOptions = maxPlayers ? { maxSize: maxPlayers } : {};
   const warsToggleOptions = maxWars ? { maxSize: maxWars } : {};
-  playersAnalysisStats = Object.entries(playersAnalysisStats);
   const {
     set: playersSelected,
     hash: playersSelectedHash,
