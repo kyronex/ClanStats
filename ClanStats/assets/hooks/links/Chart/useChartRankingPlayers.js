@@ -316,4 +316,4 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
   };
 };
 
-export default useChartRankingPlayers;
+export { useChartRankingPlayers };

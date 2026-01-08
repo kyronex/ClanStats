@@ -15,4 +15,4 @@ const BoutonSort = memo(function BoutonSort({ cle, handleEnabledSorts, handleWay
   );
 });
 
-export default BoutonSort;
+export { BoutonSort };

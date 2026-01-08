@@ -39,5 +39,4 @@ const useToggleSet = (initialItems = [], options = {}) => {
     hash,
   };
 };
-
-export default useToggleSet;
+export { useToggleSet };

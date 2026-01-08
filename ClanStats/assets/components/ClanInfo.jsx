@@ -1,6 +1,5 @@
-import { useClanInfo } from "../hooks";
-import { useTableSort } from "../hooks";
-import { BoutonSort } from "../hooks";
+import { useClanInfo, useTableSort } from "../hooks";
+import { BoutonSort } from "../components";
 
 import React, { useState, useEffect } from "react";
 

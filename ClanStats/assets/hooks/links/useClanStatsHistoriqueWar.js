@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import useFetch from "../api/useFetch";
+import { useFetch } from "../../hooks";
 
 const useClanStatsHistoriqueWar = (taskId) => {
   const [data, setData] = useState(null);
@@ -55,4 +55,4 @@ const useClanStatsHistoriqueWar = (taskId) => {
   };
 };
 
-export default useClanStatsHistoriqueWar;
+export { useClanStatsHistoriqueWar };

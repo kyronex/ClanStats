@@ -316,4 +316,4 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
   };
 };
 
-export default useChartComparePlayers;
+export { useChartComparePlayers };

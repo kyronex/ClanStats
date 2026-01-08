@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useFetch } from "../../hooks";
+
 const useHistoriqueClanWar = () => {
   const { execute, isLoading, errors, hasErrors, clearErrors } = useFetch();
   const MESSAGES = {
@@ -75,4 +76,4 @@ const useHistoriqueClanWar = () => {
   };
 };
 
-export default useHistoriqueClanWar;
+export { useHistoriqueClanWar };

@@ -1,8 +1,5 @@
-import { useHistoriqueClanWar } from "../hooks";
-import { useClanRiverRaceLog } from "../hooks";
-import { useToggleSet } from "../hooks";
-import { useTableSort } from "../hooks";
-import { BoutonSort } from "../hooks";
+import { useHistoriqueClanWar, useClanRiverRaceLog, useToggleSet, useTableSort } from "../hooks";
+import { BoutonSort } from "../components";
 
 import React, { useState, useEffect, useCallback, memo } from "react";
 

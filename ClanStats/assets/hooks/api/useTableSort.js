@@ -132,4 +132,4 @@ const useTableSort = (initialKeys = [], initialData) => {
   };
 };
 
-export default useTableSort;
+export { useTableSort };

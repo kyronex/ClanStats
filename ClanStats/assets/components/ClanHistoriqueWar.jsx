@@ -1,6 +1,5 @@
-import { useToggleSet } from "../hooks";
-import { useTableSort } from "../hooks";
-import { BoutonSort } from "../hooks";
+import { useToggleSet, useTableSort } from "../hooks";
+import { BoutonSort } from "../components";
 
 import React, { useState, useEffect, useRef, memo } from "react";
 

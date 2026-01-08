@@ -1,5 +1,5 @@
 import { useTableSort } from "../hooks";
-import { BoutonSort } from "../hooks";
+import { BoutonSort } from "../components";
 import React, { useState } from "react";
 
 function ClanSearchResult({ clans, onClanSelect }) {

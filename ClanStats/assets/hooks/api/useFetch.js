@@ -46,4 +46,4 @@ const useFetch = () => {
   };
 };
 
-export default useFetch;
+export { useFetch };

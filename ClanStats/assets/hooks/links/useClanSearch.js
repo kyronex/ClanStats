@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import useFetch from "../api/useFetch";
+import { useFetch } from "../../hooks";
+
 const useClanSearch = () => {
   const { execute, isLoading, errors, hasErrors, clearErrors } = useFetch();
   const MESSAGES = {
@@ -64,5 +65,4 @@ const useClanSearch = () => {
     clearErrors,
   };
 };
-
-export default useClanSearch;
+export { useClanSearch };
