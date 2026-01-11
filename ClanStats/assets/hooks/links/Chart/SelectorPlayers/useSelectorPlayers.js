@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useToggleSet, useSelectorByWar } from "../../../../hooks";
-
+// TODO revoir les axposition des variable dans value
 // 🔹 Hook principal : retourne contexte
 function useSelectorPlayers({
   warsStats,
   playersAnalysisStats,
-  handleWarSelect, // callback optionnel
+  handleWarsSelect, // callback optionnel
   handlePlayersSelect,
   maxWars = 1,
   maxPlayers = null,
@@ -33,7 +33,7 @@ function useSelectorPlayers({
     clear: clearWarsSelected,
   } = useToggleSet([], warsToggleOpts);
 
-  const { currentWar, selectablePlayers, filteredPlayers, getValidSelectedPlayers } = useSelectorByWar(
+  const { currentWars, selectablePlayers, filteredPlayers, getValidSelectedPlayers } = useSelectorByWar(
     warsSelected,
     playersSelected,
     warsStats,
@@ -41,11 +41,11 @@ function useSelectorPlayers({
   );
 
   const selectAllPlayers = useMemo(() => {
-    if (!enablePlayerSelectAll || !currentWar) return false;
+    if (!enablePlayerSelectAll || !currentWars) return false;
     const selectableCount = Object.keys(selectablePlayers).length;
     const effectiveMax = maxPlayers || selectableCount;
     return selectableCount > 0 && playersSelected.size === Math.min(selectableCount, effectiveMax);
-  }, [enablePlayerSelectAll, currentWar, selectablePlayers, playersSelected.size, maxPlayers]);
+  }, [enablePlayerSelectAll, currentWars, selectablePlayers, playersSelected.size, maxPlayers]);
 
   const selectAllWars = useMemo(() => {
     if (!enableWarSelectAll) return false;
@@ -87,13 +87,13 @@ function useSelectorPlayers({
   };
 
   useEffect(() => {
-    if (!currentWar) return;
+    if (!currentWars) return;
     const validPlayersSet = getValidSelectedPlayers(playersSelected);
     const needsSync = validPlayersSet.size !== playersSelected.size || ![...validPlayersSet].every((tag) => playersSelected.has(tag));
     if (needsSync) {
       replacePlayersSelected([...validPlayersSet]);
     }
-  }, [currentWar, playersSelected, getValidSelectedPlayers, replacePlayersSelected]);
+  }, [currentWars, playersSelected, getValidSelectedPlayers, replacePlayersSelected]);
 
   const prevHashsRef = useRef({ wars: null, players: null });
 
@@ -106,14 +106,14 @@ function useSelectorPlayers({
       handlePlayersSelect({});
     } else if (Object.keys(filteredPlayers).length > 0) {
       handlePlayersSelect(filteredPlayers);
-      handleWarSelect(warsSelected);
+      handleWarsSelect(warsSelected);
     }
   }, [playersSelectedHash, warsSelectedHash, filteredPlayers, playersSelected.size, warsSelected]);
 
   const value = {
     warsStats,
     playersAnalysisStats,
-    handleWarSelect,
+    handleWarsSelect,
     handlePlayersSelect,
     maxWars,
     maxPlayers,
@@ -132,7 +132,7 @@ function useSelectorPlayers({
     replaceWarsSelected,
     clearWarsSelected,
 
-    currentWar,
+    currentWars,
     selectablePlayers,
     filteredPlayers,
     getValidSelectedPlayers,

@@ -3,7 +3,7 @@ import { PlayerItem } from "../../../components";
 
 function PlayersList() {
   const {
-    currentWar,
+    currentWars,
     maxPlayers,
     selectablePlayers,
     isPlayersSelected,
@@ -24,7 +24,7 @@ function PlayersList() {
         padding: "10px",
       }}
     >
-      {enablePlayerSelectAll && currentWar && (
+      {enablePlayerSelectAll && currentWars && (
         <div>
           <label>
             <input type="checkbox" checked={selectAllPlayers} onChange={handleSelectAllPlayers} />

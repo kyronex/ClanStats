@@ -1,13 +1,9 @@
 import React from "react";
 import { useChartRankingPlayers } from "../../hooks";
 //TODO faire la configuration des graphiques
-import { Radar, Bar, Line } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 const ChartRankingPlayers = ({ warsStats, filteredData, warsSelected }) => {
-  const { chartRefScore, chartRefTop, optionsScore, optionsTop, formatedScoreData, formatedTopData, isEmpty } = useChartRankingPlayers(
-    warsStats,
-    filteredData,
-    warsSelected
-  );
+  const { isEmpty, chartRefRank, optionsRank, formatedRankData } = useChartRankingPlayers(warsStats, filteredData, warsSelected);
 
   if (isEmpty) {
     return <div style={{ padding: "20px", textAlign: "center" }}>Aucune donnée disponible</div>;
@@ -15,8 +11,8 @@ const ChartRankingPlayers = ({ warsStats, filteredData, warsSelected }) => {
 
   return (
     <div style={{ display: "flex", gap: "20px", padding: "20px" }}>
-      <div style={{ width: "550px", height: "550px" }}>
-        <Line ref={chartRefTop} data={formatedTopData} options={optionsTop} />
+      <div style={{ width: "100%", height: "650px" }}>
+        <Line ref={chartRefRank} data={formatedRankData} options={optionsRank} />
       </div>
     </div>
   );

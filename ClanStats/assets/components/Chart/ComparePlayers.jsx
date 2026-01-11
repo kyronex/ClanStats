@@ -9,7 +9,7 @@ const ComparePlayers = ({ rData }) => {
     setFilteredPlayers(players);
   }, []);
 
-  const handleWarSelect = useCallback((wars) => {
+  const handleWarsSelect = useCallback((wars) => {
     setWarsSelected(wars);
   }, []);
   const playersAnalysisStats = rData?.data.playersAnalysisStats;
@@ -20,7 +20,7 @@ const ComparePlayers = ({ rData }) => {
         warsStats={warsStats}
         playersAnalysisStats={playersAnalysisStats}
         handlePlayersSelect={handlePlayersSelect}
-        handleWarSelect={handleWarSelect}
+        handleWarsSelect={handleWarsSelect}
         maxPlayers={5}
         maxWars={1}
         enablePlayerSelectAll={true}

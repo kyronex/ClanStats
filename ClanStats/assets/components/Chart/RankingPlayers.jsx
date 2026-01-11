@@ -10,7 +10,7 @@ const RankingPlayers = ({ rData }) => {
     setFilteredPlayers(players);
   }, []);
 
-  const handleWarSelect = useCallback((wars) => {
+  const handleWarsSelect = useCallback((wars) => {
     setWarsSelected(wars);
   }, []);
   const playersAnalysisStats = rData?.data.playersAnalysisStats;
@@ -20,12 +20,12 @@ const RankingPlayers = ({ rData }) => {
       <SelectorPlayersContainer
         warsStats={warsStats}
         playersAnalysisStats={playersAnalysisStats}
+        handleWarsSelect={handleWarsSelect}
         handlePlayersSelect={handlePlayersSelect}
-        handleWarSelect={handleWarSelect}
-        maxPlayers={null}
         maxWars={null}
-        enablePlayerSelectAll={true}
+        maxPlayers={null}
         enableWarSelectAll={true}
+        enablePlayerSelectAll={true}
       >
         <WarsList />
         <ChartRankingPlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />

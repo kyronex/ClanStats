@@ -1,4 +1,5 @@
 import { useMemo, useRef } from "react";
+import { useChartColorSettings } from "../../../hooks";
 
 import {
   Chart as ChartJS,
@@ -16,49 +17,17 @@ import {
 
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
 const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
-  const createColorSetting = (r, g, b) => ({
-    radar: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      borderWidth: 3,
-      pointBackgroundColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      pointBorderColor: "#fff",
-      pointHoverBackgroundColor: "#fff",
-      pointHoverBorderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      fill: true,
-    },
-    bar: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.45)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      borderWidth: 2,
-      hoverBackgroundColor: `rgba(${r}, ${g}, ${b}, 0.65)`,
-      hoverBorderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      hoverBorderWidth: 3,
-    },
-    raw: {
-      rgb: `rgb(${r}, ${g}, ${b})`,
-      rgba: (alpha = 1) => `rgba(${r}, ${g}, ${b}, ${alpha})`,
-    },
-  });
+  const { getColorSettingByIndex } = useChartColorSettings();
 
   const calculateOptimalMaxScoreChart = (playerValuesScore) => {
     const totalMax = Math.max(...Object.values(playerValuesScore));
     const maxWith110Percent = totalMax * 1.1;
     const roundedMax = Math.ceil(maxWith110Percent / 10) * 10;
-    console.log(`📊 Max data: ${roundedMax}, Max avec 110%: ${maxWith110Percent}, Arrondi: ${roundedMax}`);
     return roundedMax;
   };
 
   const invertPercentage = (currentPercentage) => {
     return 100 - currentPercentage;
-  };
-
-  const COLOR_SETTINGS = {
-    SETTINGS_0: createColorSetting(54, 162, 235), // 🔵 Bleu
-    SETTINGS_1: createColorSetting(255, 99, 132), // 🔴 Rouge/Rose
-    SETTINGS_2: createColorSetting(75, 192, 192), // 🟢 Vert/Turquoise
-    SETTINGS_3: createColorSetting(255, 206, 86), // 🟡 Jaune/Orange
-    SETTINGS_4: createColorSetting(153, 102, 255), // 🟣 Violet/Mauve
   };
 
   const LABEL_SCORE = {
@@ -134,11 +103,10 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
     }
 
     const datasScore = Object.entries(LABEL_SCORE).map(([key, label], index) => {
-      const colorIndex = index % 5;
       return {
         label: label,
         data: datasetsMap[key],
-        ...COLOR_SETTINGS[`SETTINGS_${colorIndex}`].bar,
+        ...getColorSettingByIndex(index, Object.keys(filteredData).length, "bar"),
         stack: "Stack 0",
       };
     });
@@ -146,8 +114,6 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
     const roundedMax = calculateOptimalMaxScoreChart(playerValuesScore); //Math.max(...Object.values(playerValuesScore));
     const datasTop = Object.entries(filteredData)
       .map(([key, data], index) => {
-        const colorIndex = index % 5;
-        const colorSetting = COLOR_SETTINGS[`SETTINGS_${colorIndex}`];
         const warStats = data.scoresFinal?.[currentWar];
         if (!warStats) return null;
 
@@ -158,7 +124,7 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
             invertPercentage(warStats.posBoatAttacksRank) || 0,
             invertPercentage(warStats.posDecksUsedRank) || 0,
           ],
-          ...colorSetting.radar,
+          ...getColorSettingByIndex(index, Object.keys(filteredData).length, "radar"),
         };
       })
       .filter(Boolean);
@@ -306,13 +272,13 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
   };
 
   return {
-    formatedScoreData,
-    formatedTopData,
-    optionsScore,
-    optionsTop,
+    isEmpty,
     chartRefScore,
     chartRefTop,
-    isEmpty,
+    optionsScore,
+    optionsTop,
+    formatedScoreData,
+    formatedTopData,
   };
 };
 

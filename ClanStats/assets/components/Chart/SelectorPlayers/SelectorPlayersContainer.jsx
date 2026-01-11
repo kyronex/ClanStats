@@ -3,7 +3,7 @@ function SelectorPlayersContainer({
   children,
   warsStats,
   playersAnalysisStats,
-  handleWarSelect,
+  handleWarsSelect,
   handlePlayersSelect,
   maxPlayers = null,
   maxWars = 1,
@@ -13,7 +13,7 @@ function SelectorPlayersContainer({
   const { value } = useSelectorPlayers({
     warsStats,
     playersAnalysisStats,
-    handleWarSelect,
+    handleWarsSelect,
     handlePlayersSelect,
     maxPlayers,
     maxWars,

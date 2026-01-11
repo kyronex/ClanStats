@@ -1,4 +1,5 @@
 import { useMemo, useRef } from "react";
+import { useChartColorSettings } from "../../../hooks";
 
 import {
   Chart as ChartJS,
@@ -16,50 +17,7 @@ import {
 
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
 const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
-  const createColorSetting = (r, g, b) => ({
-    radar: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      borderWidth: 3,
-      pointBackgroundColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      pointBorderColor: "#fff",
-      pointHoverBackgroundColor: "#fff",
-      pointHoverBorderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      fill: true,
-    },
-    bar: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.45)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      borderWidth: 2,
-      hoverBackgroundColor: `rgba(${r}, ${g}, ${b}, 0.65)`,
-      hoverBorderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      hoverBorderWidth: 3,
-    },
-    raw: {
-      rgb: `rgb(${r}, ${g}, ${b})`,
-      rgba: (alpha = 1) => `rgba(${r}, ${g}, ${b}, ${alpha})`,
-    },
-  });
-
-  const calculateOptimalMaxScoreChart = (playerValuesScore) => {
-    const totalMax = Math.max(...Object.values(playerValuesScore));
-    const maxWith110Percent = totalMax * 1.1;
-    const roundedMax = Math.ceil(maxWith110Percent / 10) * 10;
-    console.log(`📊 Max data: ${roundedMax}, Max avec 110%: ${maxWith110Percent}, Arrondi: ${roundedMax}`);
-    return roundedMax;
-  };
-
-  const invertPercentage = (currentPercentage) => {
-    return 100 - currentPercentage;
-  };
-
-  const COLOR_SETTINGS = {
-    SETTINGS_0: createColorSetting(54, 162, 235), // 🔵 Bleu
-    SETTINGS_1: createColorSetting(255, 99, 132), // 🔴 Rouge/Rose
-    SETTINGS_2: createColorSetting(75, 192, 192), // 🟢 Vert/Turquoise
-    SETTINGS_3: createColorSetting(255, 206, 86), // 🟡 Jaune/Orange
-    SETTINGS_4: createColorSetting(153, 102, 255), // 🟣 Violet/Mauve
-  };
+  const { getColorSettingByIndex } = useChartColorSettings();
 
   const LABEL_SCORE = {
     continuity: "Continuity",
@@ -68,113 +26,73 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
     decksUsedRank: "Decks Used",
   };
 
-  const currentWar = Array.from(warsSelected)[0];
-  const chartRefScore = useRef(null);
-  const chartRefTop = useRef(null);
-
-  const handleClickChartRefScore = (evt, legendItem, legend) => {
-    ChartJS.defaults.plugins.legend.onClick.call(this, evt, legendItem, legend);
-    setTimeout(() => {
-      if (chartRefScore.current) {
-        const visibleMetas = chartRefScore.current.getSortedVisibleDatasetMetas();
-        if (visibleMetas.length === 0) return;
-        const allValues = visibleMetas.map((meta) => meta._dataset.data);
-        const newMax = calculateOptimalMaxScoreChart(allValues);
-        chartRefScore.current.options.scales.y.max = newMax;
-        //chartRefScore.current.update("none");
-      }
-    }, 50);
-  };
+  const chartRefRank = useRef(null);
 
   const isEmpty =
     Object.keys(filteredData).length === 0 ||
-    !currentWar ||
+    warsSelected.size === 0 ||
     Object.keys(warsStats).length === 0 ||
     Object.values(filteredData).some((v) => v === undefined);
 
-  const { formatedScoreData, formatedTopData, dynamicMaxScore } = useMemo(() => {
+  const { formatedRankData, dynamicMaxScore } = useMemo(() => {
     if (isEmpty) {
       return {
-        formatedScoreData: { labels: [], datasets: [] },
-        formatedTopData: { labels: [], datasets: [] },
+        formatedRankData: { labels: [], datasets: [] },
         dynamicMaxScore: 100,
       };
     }
 
-    const labels = [];
-    const datasetsMap = {};
-    let playerValuesScore = {};
+    const labels = Array.from(warsSelected).sort();
+    let maxScore = 0;
 
-    Object.keys(LABEL_SCORE).forEach((key) => {
-      datasetsMap[key] = [];
-    });
-
-    labels.push("Mediane");
-    playerValuesScore = { Mediane: 0 };
-    for (const [target, label] of Object.entries(LABEL_SCORE)) {
-      let newTarget = target.replace("Rank", "");
-      newTarget = "median" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
-      const value = warsStats[currentWar][newTarget] || 0;
-      datasetsMap[target].push(value);
-      playerValuesScore["Mediane"] += value;
-    }
-
-    for (const [playerTag, playerData] of Object.entries(filteredData)) {
-      const warStats = playerData.scoresFinal?.[currentWar];
-      if (!warStats) continue;
-      if (!playerValuesScore[playerTag]) {
-        playerValuesScore[playerTag] = 0;
+    const shuffleArray = (array) => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-      labels.push(playerData.originalStats.name);
-      for (const [target, label] of Object.entries(LABEL_SCORE)) {
-        const value = warStats[target] || 0;
-        datasetsMap[target].push(value);
-        playerValuesScore[playerTag] += value;
-      }
-    }
+      return shuffled;
+    };
 
-    const datasScore = Object.entries(LABEL_SCORE).map(([key, label], index) => {
-      const colorIndex = index % 5;
-      return {
-        label: label,
-        data: datasetsMap[key],
-        ...COLOR_SETTINGS[`SETTINGS_${colorIndex}`].bar,
-        stack: "Stack 0",
-      };
-    });
-
-    const roundedMax = calculateOptimalMaxScoreChart(playerValuesScore); //Math.max(...Object.values(playerValuesScore));
-    const datasTop = Object.entries(filteredData)
+    const datasRank = shuffleArray(Object.entries(filteredData))
       .map(([key, data], index) => {
-        const colorIndex = index % 5;
-        const colorSetting = COLOR_SETTINGS[`SETTINGS_${colorIndex}`];
-        const warStats = data.scoresFinal?.[currentWar];
-        if (!warStats) return null;
+        // if (!labels.every((label) => data.scoresFinal?.[label])) return null;
+
+        let playerValuesScore = [];
+        let playerValuesDetails = [];
+        for (const warKey of labels) {
+          let score = null;
+          let details = [];
+          if (data.scoresFinal?.[warKey]) {
+            for (const [target, label] of Object.entries(LABEL_SCORE)) {
+              const value = data.scoresFinal?.[warKey][target] || 0;
+              score += value;
+              details[target] = value;
+            }
+          }
+          if (maxScore < score) maxScore = score;
+          playerValuesScore.push(score);
+          playerValuesDetails.push(details);
+        }
 
         return {
           label: data.originalStats.name,
-          data: [
-            invertPercentage(warStats.posFameRank) || 0,
-            invertPercentage(warStats.posBoatAttacksRank) || 0,
-            invertPercentage(warStats.posDecksUsedRank) || 0,
-          ],
-          ...colorSetting.radar,
+          data: playerValuesScore,
+          ...getColorSettingByIndex(index, Object.keys(filteredData).length, "line"),
         };
       })
       .filter(Boolean);
 
+    const maxWith110Percent = maxScore * 1.1;
+    const roundedMax = Math.ceil(maxWith110Percent / 10) * 10;
     return {
-      formatedScoreData: {
+      formatedRankData: {
         labels: labels,
-        datasets: datasScore,
-      },
-      formatedTopData: {
-        labels: ["Top Fame Rank", "Top Boat Attacks", "Top Decks Used"],
-        datasets: datasTop,
+        datasets: datasRank,
       },
       dynamicMaxScore: roundedMax,
     };
-  }, [filteredData, currentWar]);
+  }, [filteredData, warsSelected]);
 
   const baseOptions = {
     responsive: true,
@@ -195,124 +113,101 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
       padding: {
         top: 10,
         right: 10,
-        bottom: 10,
         left: 10,
       },
     },
   };
 
-  const optionsScore = {
-    ...baseOptions,
-    maintainAspectRatio: false,
-    plugins: {
-      ...baseOptions.plugins,
-      title: {
-        display: true,
-        text: "📊 Scores des Joueurs",
-        font: { size: 16 },
-        padding: { top: 5, bottom: 10 },
-      },
-      legend: {
-        ...baseOptions.plugins.legend,
-        onClick: handleClickChartRefScore,
-      },
-      tooltip: {
-        mode: "index",
-        intersect: false,
-        callbacks: {
-          footer: (items) => {
-            const total = items.reduce((sum, item) => sum + item.parsed.y, 0);
-            return `━━━━━━━━━━\nTotal: ${total}`;
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        stacked: true,
-        grid: { display: false },
-        ticks: {
-          font: { size: 10 },
-          maxRotation: 45,
-          minRotation: 0,
-        },
-      },
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        max: dynamicMaxScore,
+  const optionsRank = useMemo(() => {
+    const safeMaxScore = dynamicMaxScore || 100;
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      aspectRatio: 1.5,
+
+      plugins: {
         title: {
           display: true,
-          text: "Score Total",
-          font: { size: 12 },
+          text: "🏆 Évolution des Scores",
+          font: { size: 16, weight: "bold" },
         },
-        ticks: {
-          font: { size: 9 },
+        legend: {
+          display: true,
+          position: "bottom",
+          labels: {
+            boxWidth: 12,
+            padding: 8,
+            font: { size: 10 },
+            usePointStyle: true,
+            pointStyle: "circle",
+            sort: (a, b) => a.text.localeCompare(b.text),
+          },
+          // ✅ Scrollable si trop de joueurs
+          maxHeight: 400,
+        },
+        tooltip: {
+          mode: "index",
+          intersect: false,
+          itemSort: (a, b) => b.raw - a.raw,
         },
       },
-    },
-  };
 
-  const optionsTop = {
-    ...baseOptions,
-    aspectRatio: 1,
-    plugins: {
-      ...baseOptions.plugins,
-      title: {
-        display: true,
-        text: "🏆 Tops des Joueurs",
-        font: { size: 16 },
-        padding: { top: 5, bottom: 10 },
-      },
-      legend: {
-        ...baseOptions.plugins.legend,
-        labels: {
-          ...baseOptions.plugins.legend.labels,
-          boxWidth: 12, // ✅ Réduit pour gagner de la place
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => `${context.dataset.label}: ${context.parsed.r}`,
-        },
-      },
-    },
-    scales: {
-      r: {
-        beginAtZero: true,
-        min: 0,
-        max: 100,
-        ticks: {
-          stepSize: 20,
-          font: { size: 9 }, // ✅ Réduit de 10 à 9
-          backdropColor: "rgba(255, 255, 255, 0.75)",
-        },
-        pointLabels: {
-          font: {
-            size: 11,
-            weight: "bold",
+      scales: {
+        x: {
+          display: true,
+          grid: {
+            display: false,
+          },
+          ticks: {
+            maxRotation: 45, // ✅ Rotation des labels si besoin
+            minRotation: 0,
+            callback: function (value, index) {
+              const label = this.getLabelForValue(value);
+              const datasets = this.chart.data.datasets;
+              let count = 0;
+              datasets.forEach((dataset) => {
+                if (dataset.data[index] !== null && dataset.data[index] !== undefined) {
+                  count++;
+                }
+              });
+              return `${label} (${count})`;
+            },
           },
         },
-        grid: {
-          color: "rgba(0, 0, 0, 0.1)",
-          lineWidth: 1,
-        },
-        angleLines: {
-          color: "rgba(0, 0, 0, 0.1)",
-          lineWidth: 1,
+        y: {
+          beginAtZero: false,
+          max: safeMaxScore,
+          grid: {
+            color: "rgba(0, 0, 0, 0.1)",
+          },
+          stepSize: Math.ceil(safeMaxScore / 10 / 500) * 500,
         },
       },
-    },
-  };
+      elements: {
+        point: {
+          radius: 4, // ✅ Points plus petits
+          hoverRadius: 7,
+          borderWidth: 1,
+        },
+        line: {
+          tension: 0.2,
+          borderWidth: 1, // ✅ Lignes plus fines
+          spanGaps: false, // Ne pas connecter les points autour du trou
+        },
+      },
+      interaction: {
+        mode: "nearest",
+        axis: "x",
+        intersect: false,
+      },
+    };
+  }, [dynamicMaxScore]);
 
   return {
-    formatedScoreData,
-    formatedTopData,
-    optionsScore,
-    optionsTop,
-    chartRefScore,
-    chartRefTop,
     isEmpty,
+    chartRefRank,
+    optionsRank,
+    formatedRankData,
   };
 };
 

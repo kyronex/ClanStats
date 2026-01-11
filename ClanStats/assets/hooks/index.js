@@ -9,6 +9,8 @@ export { useClanInfo } from "./links/useClanInfo";
 export { useHistoriqueClanWar } from "./links/useHistoriqueClanWar";
 export { useClanRiverRaceLog } from "./links/useClanRiverRaceLog";
 export { useClanStatsHistoriqueWar } from "./links/useClanStatsHistoriqueWar";
+
+export { useChartColorSettings } from "./links/Chart/useChartColorSettings";
 export { useChartComparePlayers } from "./links/Chart/useChartComparePlayers";
 export { useChartRankingPlayers } from "./links/Chart/useChartRankingPlayers";
 export { useSelectorByWar } from "./links/Chart/useSelectorByWar";
