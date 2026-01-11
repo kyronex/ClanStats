@@ -1,6 +1,9 @@
-import ChartComparePlayers from "./ChartComparePlayers.jsx";
+import ChartCompareTopPlayers from "./ChartCompareTopPlayers.jsx";
+import ChartCompareScorePlayers from "./ChartCompareScorePlayers.jsx";
 import { SelectorPlayersContainer, WarsList, PlayersList } from "../../components";
 import React, { useState, useCallback } from "react";
+
+//TODO decouper ChartComparePlayers en ChartCompareTopPlayers et ChartCompareScorePlayers
 const ComparePlayers = ({ rData }) => {
   const [filteredPlayers, setFilteredPlayers] = useState({});
   const [warsSelected, setWarsSelected] = useState({});
@@ -27,7 +30,10 @@ const ComparePlayers = ({ rData }) => {
         enableWarSelectAll={false}
       >
         <WarsList />
-        <ChartComparePlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
+        <div style={{ display: "flex", gap: "20px", padding: "20px" }}>
+          <ChartCompareScorePlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
+          <ChartCompareTopPlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
+        </div>
         <PlayersList />
       </SelectorPlayersContainer>
     </React.Fragment>

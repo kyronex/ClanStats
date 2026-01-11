@@ -11,7 +11,8 @@ export { useClanRiverRaceLog } from "./links/useClanRiverRaceLog";
 export { useClanStatsHistoriqueWar } from "./links/useClanStatsHistoriqueWar";
 
 export { useChartColorSettings } from "./links/Chart/useChartColorSettings";
-export { useChartComparePlayers } from "./links/Chart/useChartComparePlayers";
+export { useChartCompareTopPlayers } from "./links/Chart/useChartCompareTopPlayers";
+export { useChartCompareScorePlayers } from "./links/Chart/useChartCompareScorePlayers";
 export { useChartRankingPlayers } from "./links/Chart/useChartRankingPlayers";
 export { useSelectorByWar } from "./links/Chart/useSelectorByWar";
 

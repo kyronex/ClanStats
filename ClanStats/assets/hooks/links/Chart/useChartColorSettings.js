@@ -1,63 +1,18 @@
-import { useState } from "react";
-
 const useChartColorSettings = () => {
-  //const [startHue] = useState(() => Math.random() * 360);
-  const [startHue] = useState(175);
-
-  const createColorSetting = (r, g, b) => ({
-    radar: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      borderWidth: 3,
-      pointBackgroundColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      pointBorderColor: "#fff",
-      pointHoverBackgroundColor: "#fff",
-      pointHoverBorderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      fill: true,
-    },
-    bar: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.45)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      borderWidth: 2,
-      hoverBackgroundColor: `rgba(${r}, ${g}, ${b}, 0.65)`,
-      hoverBorderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      hoverBorderWidth: 3,
-    },
-    line: {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.15)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      borderWidth: 2,
-      pointBackgroundColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      pointBorderColor: "#fff",
-      pointBorderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      pointHoverBackgroundColor: "#fff",
-      pointHoverBorderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      pointHoverBorderWidth: 2,
-      tension: 0.3,
-      fill: false,
-      backgroundColor: "transparent",
-      // Version avec remplissage (area chart)
-      //fill: true,
-      //backgroundColor: `rgba(${r}, ${g}, ${b}, 0.15)`,
-    },
-    raw: {
-      rgb: `rgb(${r}, ${g}, ${b})`,
-      rgba: (alpha = 1) => `rgba(${r}, ${g}, ${b}, ${alpha})`,
-    },
-  });
-
   const createColorSettingHSL = (hue, saturation = 70, lightness = 50) => ({
     radar: {
-      backgroundColor: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.3)`,
+      backgroundColor: "transparent",
       borderColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-      borderWidth: 3,
+      borderWidth: 2,
       pointBackgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-      pointBorderColor: "#fff",
+      pointBorderColor: "#404040",
+      pointBorderWidth: 1,
+      pointRadius: 5,
+      pointHoverRadius: 8,
       pointHoverBackgroundColor: "#fff",
       pointHoverBorderColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-      fill: true,
+      pointHoverBorderWidth: 3,
+      fill: false,
     },
     bar: {
       backgroundColor: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.45)`,
@@ -88,19 +43,11 @@ const useChartColorSettings = () => {
     },
   });
 
-  const COLOR_SETTINGS = {
-    SETTINGS_0: createColorSetting(54, 162, 235), // 🔵 Bleu
-    SETTINGS_1: createColorSetting(255, 99, 132), // 🔴 Rouge/Rose
-    SETTINGS_2: createColorSetting(75, 192, 192), // 🟢 Vert/Turquoise
-    SETTINGS_3: createColorSetting(255, 206, 86), // 🟡 Jaune/Orange
-    SETTINGS_4: createColorSetting(153, 102, 255), // 🟣 Violet/Mauve
-  };
-
   const getColorSettingByIndex = (index, total, chartType = "line") => {
     const ORIGINAL_COLORS = [
       { hue: 206, saturation: 82, lightness: 57 },
       { hue: 347, saturation: 100, lightness: 69 },
-      { hue: 180, saturation: 50, lightness: 52 },
+      { hue: 175, saturation: 50, lightness: 52 },
       { hue: 43, saturation: 100, lightness: 67 },
       { hue: 260, saturation: 100, lightness: 70 },
     ];
@@ -150,8 +97,6 @@ const useChartColorSettings = () => {
   };
 
   return {
-    COLOR_SETTINGS,
-    createColorSetting,
     getColorSettingByIndex,
   };
 };

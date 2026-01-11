@@ -16,7 +16,7 @@ import {
 } from "chart.js";
 
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
-const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
+const useChartCompareScorePlayers = (warsStats, filteredData, warsSelected) => {
   const { getColorSettingByIndex } = useChartColorSettings();
 
   const calculateOptimalMaxScoreChart = (playerValuesScore) => {
@@ -24,10 +24,6 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
     const maxWith110Percent = totalMax * 1.1;
     const roundedMax = Math.ceil(maxWith110Percent / 10) * 10;
     return roundedMax;
-  };
-
-  const invertPercentage = (currentPercentage) => {
-    return 100 - currentPercentage;
   };
 
   const LABEL_SCORE = {
@@ -39,7 +35,6 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
 
   const currentWar = Array.from(warsSelected)[0];
   const chartRefScore = useRef(null);
-  const chartRefTop = useRef(null);
 
   const handleClickChartRefScore = (evt, legendItem, legend) => {
     ChartJS.defaults.plugins.legend.onClick.call(this, evt, legendItem, legend);
@@ -61,11 +56,10 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
     Object.keys(warsStats).length === 0 ||
     Object.values(filteredData).some((v) => v === undefined);
 
-  const { formatedScoreData, formatedTopData, dynamicMaxScore } = useMemo(() => {
+  const { formatedScoreData, dynamicMaxScore } = useMemo(() => {
     if (isEmpty) {
       return {
         formatedScoreData: { labels: [], datasets: [] },
-        formatedTopData: { labels: [], datasets: [] },
         dynamicMaxScore: 100,
       };
     }
@@ -112,31 +106,11 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
     });
 
     const roundedMax = calculateOptimalMaxScoreChart(playerValuesScore); //Math.max(...Object.values(playerValuesScore));
-    const datasTop = Object.entries(filteredData)
-      .map(([key, data], index) => {
-        const warStats = data.scoresFinal?.[currentWar];
-        if (!warStats) return null;
-
-        return {
-          label: data.originalStats.name,
-          data: [
-            invertPercentage(warStats.posFameRank) || 0,
-            invertPercentage(warStats.posBoatAttacksRank) || 0,
-            invertPercentage(warStats.posDecksUsedRank) || 0,
-          ],
-          ...getColorSettingByIndex(index, Object.keys(filteredData).length, "radar"),
-        };
-      })
-      .filter(Boolean);
 
     return {
       formatedScoreData: {
         labels: labels,
         datasets: datasScore,
-      },
-      formatedTopData: {
-        labels: ["Top Fame Rank", "Top Boat Attacks", "Top Decks Used"],
-        datasets: datasTop,
       },
       dynamicMaxScore: roundedMax,
     };
@@ -219,67 +193,12 @@ const useChartComparePlayers = (warsStats, filteredData, warsSelected) => {
     },
   };
 
-  const optionsTop = {
-    ...baseOptions,
-    aspectRatio: 1,
-    plugins: {
-      ...baseOptions.plugins,
-      title: {
-        display: true,
-        text: "🏆 Tops des Joueurs",
-        font: { size: 16 },
-        padding: { top: 5, bottom: 10 },
-      },
-      legend: {
-        ...baseOptions.plugins.legend,
-        labels: {
-          ...baseOptions.plugins.legend.labels,
-          boxWidth: 12, // ✅ Réduit pour gagner de la place
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => `${context.dataset.label}: ${context.parsed.r}`,
-        },
-      },
-    },
-    scales: {
-      r: {
-        beginAtZero: true,
-        min: 0,
-        max: 100,
-        ticks: {
-          stepSize: 20,
-          font: { size: 9 }, // ✅ Réduit de 10 à 9
-          backdropColor: "rgba(255, 255, 255, 0.75)",
-        },
-        pointLabels: {
-          font: {
-            size: 11,
-            weight: "bold",
-          },
-        },
-        grid: {
-          color: "rgba(0, 0, 0, 0.1)",
-          lineWidth: 1,
-        },
-        angleLines: {
-          color: "rgba(0, 0, 0, 0.1)",
-          lineWidth: 1,
-        },
-      },
-    },
-  };
-
   return {
     isEmpty,
     chartRefScore,
-    chartRefTop,
     optionsScore,
-    optionsTop,
     formatedScoreData,
-    formatedTopData,
   };
 };
 
-export { useChartComparePlayers };
+export { useChartCompareScorePlayers };
