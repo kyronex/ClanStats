@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useChartColorSettings } from "../../../hooks";
 
 import {
@@ -14,17 +14,18 @@ import {
   BarElement,
   Title,
 } from "chart.js";
-
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
 const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
   const { getColorSettingByIndex } = useChartColorSettings();
 
-  const LABEL_SCORE = {
-    continuity: "Continuity",
-    fameRank: "Fame Rank",
-    boatAttacksRank: "Boat Attacks",
-    decksUsedRank: "Decks Used",
+  const defaultConfig = {
+    continuity: { label: "Continuity", active: false },
+    fameRank: { label: "Fame Rank", active: true },
+    boatAttacksRank: { label: "Boat Attacks", active: true },
+    decksUsedRank: { label: "Decks Used", active: true },
   };
+
+  const [optionCategory, setOptionCategory] = useState(defaultConfig);
 
   const chartRefRank = useRef(null);
 
@@ -61,17 +62,21 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
         let playerValuesScore = [];
         let playerValuesDetails = [];
         for (const warKey of labels) {
-          let score = null;
-          let details = [];
+          let score = 0;
+          let details = {};
           if (data.scoresFinal?.[warKey]) {
-            for (const [target, label] of Object.entries(LABEL_SCORE)) {
+            for (const [target, conf] of Object.entries(optionCategory)) {
+              if (!conf?.active) continue;
               const value = data.scoresFinal?.[warKey][target] || 0;
               score += value;
               details[target] = value;
             }
           }
-          if (maxScore < score) maxScore = score;
-          playerValuesScore.push(score);
+          const finalScore = data.scoresFinal?.[warKey] ? score : null;
+          if (finalScore !== null && finalScore > maxScore) {
+            maxScore = finalScore;
+          }
+          playerValuesScore.push(finalScore);
           playerValuesDetails.push(details);
         }
 
@@ -92,31 +97,7 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
       },
       dynamicMaxScore: roundedMax,
     };
-  }, [filteredData, warsSelected]);
-
-  const baseOptions = {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1.2,
-    plugins: {
-      legend: {
-        display: true,
-        position: "top",
-        labels: {
-          font: {
-            size: 12,
-          },
-        },
-      },
-    },
-    layout: {
-      padding: {
-        top: 10,
-        right: 10,
-        left: 10,
-      },
-    },
-  };
+  }, [filteredData, warsSelected, optionCategory]);
 
   const optionsRank = useMemo(() => {
     const safeMaxScore = dynamicMaxScore || 100;
@@ -203,11 +184,23 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
     };
   }, [dynamicMaxScore]);
 
+  const toggleCategory = (key) => {
+    setOptionCategory((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        active: !prev[key].active,
+      },
+    }));
+  };
+
   return {
     isEmpty,
     chartRefRank,
     optionsRank,
     formatedRankData,
+    optionCategory,
+    toggleCategory,
   };
 };
 

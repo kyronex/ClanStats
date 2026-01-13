@@ -2,6 +2,7 @@ import ChartRankingPlayers from "./ChartRankingPlayers.jsx";
 import { SelectorPlayersContainer, WarsList, PlayersList } from "../../components";
 
 import React, { useState, useCallback } from "react";
+//Hookerises les variables de state et leur callback pareil que dans ComparePlayers
 const RankingPlayers = ({ rData }) => {
   const [filteredPlayers, setFilteredPlayers] = useState({});
   const [warsSelected, setWarsSelected] = useState({});
