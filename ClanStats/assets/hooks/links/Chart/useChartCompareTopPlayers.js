@@ -64,82 +64,71 @@ const useChartCompareTopPlayers = (warsStats, filteredData, warsSelected) => {
     };
   }, [filteredData, currentWar]);
 
-  const baseOptions = {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1.2,
-    plugins: {
-      legend: {
-        display: true,
-        position: "top",
-        labels: {
-          font: {
-            size: 12,
-          },
-        },
-      },
-    },
-    layout: {
-      padding: {
-        top: 10,
-        right: 10,
-        bottom: 10,
-        left: 10,
-      },
-    },
-  };
+  const optionsTop = useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 1,
 
-  const optionsTop = {
-    ...baseOptions,
-    aspectRatio: 1,
-    plugins: {
-      ...baseOptions.plugins,
-      title: {
-        display: true,
-        text: "🏆 Tops des Joueurs",
-        font: { size: 16 },
-        padding: { top: 5, bottom: 10 },
-      },
-      legend: {
-        ...baseOptions.plugins.legend,
-        labels: {
-          ...baseOptions.plugins.legend.labels,
-          boxWidth: 12, // ✅ Réduit pour gagner de la place
+      plugins: {
+        title: {
+          display: true,
+          text: "🏆 Tops des Joueurs",
+          font: { size: 16 },
+          padding: { top: 5, bottom: 10 },
         },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => `${context.dataset.label}: ${context.parsed.r}`,
-        },
-      },
-    },
-    scales: {
-      r: {
-        beginAtZero: true,
-        min: 0,
-        max: 100,
-        ticks: {
-          stepSize: 20,
-          font: { size: 9 }, // ✅ Réduit de 10 à 9
-          backdropColor: "rgba(255, 255, 255, 0.75)",
-        },
-        pointLabels: {
-          font: {
-            size: 11,
-            weight: "bold",
+        legend: {
+          display: true,
+          position: "top",
+          labels: {
+            font: { size: 12 },
+            boxWidth: 12,
           },
         },
-        grid: {
-          color: "rgba(0, 0, 0, 0.1)",
-          lineWidth: 1,
-        },
-        angleLines: {
-          color: "rgba(0, 0, 0, 0.1)",
-          lineWidth: 1,
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${context.parsed.r}`,
+          },
         },
       },
-    },
-  };
+
+      layout: {
+        padding: {
+          top: 10,
+          right: 10,
+          bottom: 10,
+          left: 10,
+        },
+      },
+
+      scales: {
+        r: {
+          beginAtZero: true,
+          min: 0,
+          max: 100,
+          ticks: {
+            stepSize: 20,
+            font: { size: 9 },
+            backdropColor: "rgba(255, 255, 255, 0.75)",
+          },
+          pointLabels: {
+            font: {
+              size: 11,
+              weight: "bold",
+            },
+          },
+          grid: {
+            color: "rgba(0, 0, 0, 0.1)",
+            lineWidth: 1,
+          },
+          angleLines: {
+            color: "rgba(0, 0, 0, 0.1)",
+            lineWidth: 1,
+          },
+        },
+      },
+    };
+  }, []);
 
   return {
     isEmpty,

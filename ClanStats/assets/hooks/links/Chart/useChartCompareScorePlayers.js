@@ -116,82 +116,75 @@ const useChartCompareScorePlayers = (warsStats, filteredData, warsSelected) => {
     };
   }, [filteredData, currentWar]);
 
-  const baseOptions = {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1.2,
-    plugins: {
-      legend: {
-        display: true,
-        position: "top",
-        labels: {
-          font: {
-            size: 12,
-          },
-        },
-      },
-    },
-    layout: {
-      padding: {
-        top: 10,
-        right: 10,
-        bottom: 10,
-        left: 10,
-      },
-    },
-  };
+  const optionsScore = useMemo(() => {
+    const safeMaxScore = dynamicMaxScore || 100;
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      aspectRatio: 1.2,
 
-  const optionsScore = {
-    ...baseOptions,
-    maintainAspectRatio: false,
-    plugins: {
-      ...baseOptions.plugins,
-      title: {
-        display: true,
-        text: "📊 Scores des Joueurs",
-        font: { size: 16 },
-        padding: { top: 5, bottom: 10 },
-      },
-      legend: {
-        ...baseOptions.plugins.legend,
-        onClick: handleClickChartRefScore,
-      },
-      tooltip: {
-        mode: "index",
-        intersect: false,
-        callbacks: {
-          footer: (items) => {
-            const total = items.reduce((sum, item) => sum + item.parsed.y, 0);
-            return `━━━━━━━━━━\nTotal: ${total}`;
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        stacked: true,
-        grid: { display: false },
-        ticks: {
-          font: { size: 10 },
-          maxRotation: 45,
-          minRotation: 0,
-        },
-      },
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        max: dynamicMaxScore,
+      plugins: {
         title: {
           display: true,
-          text: "Score Total",
-          font: { size: 12 },
+          text: "📊 Scores des Joueurs",
+          font: { size: 16 },
+          padding: { top: 5, bottom: 10 },
         },
-        ticks: {
-          font: { size: 9 },
+        legend: {
+          display: true,
+          position: "top",
+          labels: {
+            font: { size: 12 },
+          },
+          onClick: handleClickChartRefScore,
+        },
+        tooltip: {
+          mode: "index",
+          intersect: false,
+          callbacks: {
+            footer: (items) => {
+              const total = items.reduce((sum, item) => sum + item.parsed.y, 0);
+              return `━━━━━━━━━━\nTotal: ${total}`;
+            },
+          },
         },
       },
-    },
-  };
+
+      layout: {
+        padding: {
+          top: 10,
+          right: 10,
+          bottom: 10,
+          left: 10,
+        },
+      },
+
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: {
+            font: { size: 10 },
+            maxRotation: 45,
+            minRotation: 0,
+          },
+        },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          max: safeMaxScore,
+          title: {
+            display: true,
+            text: "Score Total",
+            font: { size: 12 },
+          },
+          ticks: {
+            font: { size: 9 },
+          },
+        },
+      },
+    };
+  }, [dynamicMaxScore]);
 
   return {
     isEmpty,

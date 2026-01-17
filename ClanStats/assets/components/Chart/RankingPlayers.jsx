@@ -1,21 +1,14 @@
 import ChartRankingPlayers from "./ChartRankingPlayers.jsx";
+import ChartSingleRankingPlayers from "./ChartSingleRankingPlayers.jsx";
 import { SelectorPlayersContainer, WarsList, PlayersList } from "../../components";
 
-import React, { useState, useCallback } from "react";
-//Hookerises les variables de state et leur callback pareil que dans ComparePlayers
+import React from "react";
+import { useChartDataSelection } from "../../hooks";
+
 const RankingPlayers = ({ rData }) => {
-  const [filteredPlayers, setFilteredPlayers] = useState({});
-  const [warsSelected, setWarsSelected] = useState({});
+  const { filteredPlayers, warsSelected, handlePlayersSelect, handleWarsSelect, playersAnalysisStats, warsStats } =
+    useChartDataSelection(rData);
 
-  const handlePlayersSelect = useCallback((players) => {
-    setFilteredPlayers(players);
-  }, []);
-
-  const handleWarsSelect = useCallback((wars) => {
-    setWarsSelected(wars);
-  }, []);
-  const playersAnalysisStats = rData?.data.playersAnalysisStats;
-  const warsStats = rData?.data.warsStats;
   return (
     <React.Fragment>
       <SelectorPlayersContainer
@@ -29,7 +22,12 @@ const RankingPlayers = ({ rData }) => {
         enablePlayerSelectAll={true}
       >
         <WarsList />
-        <ChartRankingPlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
+
+        {warsSelected.size === 1 ? (
+          <ChartSingleRankingPlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
+        ) : (
+          <ChartRankingPlayers warsStats={warsStats} filteredData={filteredPlayers} warsSelected={warsSelected} />
+        )}
         <PlayersList />
       </SelectorPlayersContainer>
     </React.Fragment>
