@@ -5,8 +5,6 @@ namespace App\Dto\ClashRoyale\Analysis;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-
-// TODO: penser a faire une normalisation des scores
 class Score
 {
   #[Assert\NotBlank]

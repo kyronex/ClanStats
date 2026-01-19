@@ -73,13 +73,19 @@ const useChartCompareScorePlayers = (warsStats, filteredData, warsSelected) => {
     });
 
     labels.push("Mediane");
-    playerValuesScore = { Mediane: 0 };
+    labels.push("Moyenne");
+    playerValuesScore = { Mediane: 0, Moyenne: 0 };
+    console.log("warsStats[currentWar]", warsStats[currentWar]);
     for (const [target, label] of Object.entries(LABEL_SCORE)) {
       let newTarget = target.replace("Rank", "");
-      newTarget = "median" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
-      const value = warsStats[currentWar][newTarget] || 0;
-      datasetsMap[target].push(value);
-      playerValuesScore["Mediane"] += value;
+      const newTargetMedian = "median" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
+      const newTargetAverage = "average" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
+      const valueMedian = warsStats[currentWar][newTargetMedian] || 0;
+      const valueAverage = warsStats[currentWar][newTargetAverage] || 0;
+      datasetsMap[target].push(valueMedian);
+      datasetsMap[target].push(valueAverage);
+      playerValuesScore["Mediane"] += valueMedian;
+      playerValuesScore["Moyenne"] += valueAverage;
     }
 
     for (const [playerTag, playerData] of Object.entries(filteredData)) {

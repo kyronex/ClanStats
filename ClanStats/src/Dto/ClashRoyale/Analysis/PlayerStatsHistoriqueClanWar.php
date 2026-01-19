@@ -8,7 +8,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 use App\Dto\ClashRoyale\Analysis\War;
 
-// TODO: ajout des calculs average
 class PlayerStatsHistoriqueClanWar
 {
     #[Assert\NotBlank]

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useToggleSet, useSelectorByWar } from "../../../../hooks";
-// TODO revoir les axposition des variable dans value
+// TODO revoir les exposition des variable dans value
 // 🔹 Hook principal : retourne contexte
 function useSelectorPlayers({
   warsStats,

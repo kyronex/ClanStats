@@ -120,42 +120,90 @@ class AnalysisPlayersStats
       $data = $this->getScoreVariable($warsStats, $data);
       $playersAnalysisStats[$playerKey] = new PlayerStats($data);
     }
-    $warsStats = $this->updateMedianContinuityWarStat($warsStats, $playersAnalysisStats);
-    return array_merge(["warsStats" => $warsStats], ["playersAnalysisStats" => $playersAnalysisStats]);
+    $warsStats = $this->updateStatisticalMetrics($warsStats, $playersAnalysisStats);
+    return [
+      "warsStats" => $warsStats,
+      "playersAnalysisStats" => $playersAnalysisStats
+    ];
   }
 
   /**
-   * Met à jour les médianes de continuité et normalise les métriques pour chaque guerre.
-   *
-   * Calcule la médiane de continuité pour chaque guerre en se basant sur les
-   * scores finaux des joueurs participants. Applique également les facteurs de
-   * normalisation sur les médianes d'attaques de bateaux et de decks utilisés.
+   * Initialise les modifications des statistiques de continuité.
    *
    * @param array<string, WarStatsHistoriqueClanWar> $warsStats Statistiques des guerres
    * @param array<string, PlayerStats> $playersStats Statistiques analysées des joueurs
    * @return array<string, WarStatsHistoriqueClanWar> Statistiques mises à jour
    */
-  public function updateMedianContinuityWarStat($warsStats, $playersStats)
+  public function updateStatisticalMetrics($warsStats, $playersStats)
+  {
+    $warsStats = $this->updateContinuityWarStat($warsStats, $playersStats, 'median');
+    $warsStats = $this->updateContinuityWarStat($warsStats, $playersStats, 'average');
+    return $warsStats;
+  }
+
+  /**
+   * Met à jour les statistiques de continuité (moyenne ou médiane) pour chaque guerre.
+   *
+   * @param array<string, WarStatsHistoriqueClanWar> $warsStats
+   * @param array<string, PlayerStats> $playersStats
+   * @param string $type 'median' ou 'average'
+   * @return array<string, WarStatsHistoriqueClanWar>
+   */
+  private function updateContinuityWarStat(array $warsStats, array $playersStats, string $type): array
   {
     $warsDto = [];
+
     foreach ($warsStats as $warKey => $warStats) {
       $newWarStats = $warStats->toArray();
+
       if ($warKey === "all") {
         $warsDto[$warKey] = new WarStatsHistoriqueClanWar($newWarStats);
         continue;
       }
-      $scores = [];
-      foreach ($playersStats as $playerKey => $playerStats) {
-        if (!in_array($playerKey, $warStats->getPlayers())) continue;
-        $scores[] = $playerStats->getSeasonScoresFinal($warKey)->getContinuity() ?? 0;;
-      }
 
-      $newWarStats["medianBoatAttacks"] = $this->getFieldsToRound("boatAttacksRank", $newWarStats["medianBoatAttacks"] * $this->parameterBag->get("clash_royale.score.normalisation_boat_attacks"));
-      $newWarStats["medianDecksUsed"] = $this->getFieldsToRound("decksUsedRank", $newWarStats["medianDecksUsed"] * $this->parameterBag->get("clash_royale.score.normalisation_decks_used"));
-      $newWarStats["medianContinuity"] = $this->getFieldsToRound("continuity", $this->analysisTools->calculateMedian($scores));
+      $scores = $this->extractContinuityScores($playersStats, $warStats->getPlayers(), $warKey);
+      $newWarStats = $this->applyNormalisedMetrics($newWarStats, $scores, $type);
+
       $warsDto[$warKey] = new WarStatsHistoriqueClanWar($newWarStats);
     }
+
     return $warsDto;
+  }
+
+  /**
+   * Extrait les scores de continuité des joueurs participants.
+   */
+  private function extractContinuityScores(array $playersStats, array $warPlayers, string $warKey): array
+  {
+    $scores = [];
+    foreach ($playersStats as $playerKey => $playerStats) {
+      if (!in_array($playerKey, $warPlayers, true)) {
+        continue;
+      }
+      $scores[] = $playerStats->getSeasonScoresFinal($warKey)->getContinuity() ?? 0;
+    }
+
+    return $scores;
+  }
+
+  /**
+   * Applique les métriques normalisées selon le type (median/average).
+   */
+  private function applyNormalisedMetrics(array $warStats, array $scores, string $type): array
+  {
+    $boatNorm = $this->parameterBag->get("clash_royale.score.normalisation_boat_attacks");
+    $decksNorm = $this->parameterBag->get("clash_royale.score.normalisation_decks_used");
+
+    $calculator = $type === 'median'
+      ? fn($s) => $this->analysisTools->calculateMedian($s)
+      : fn($s) => $this->analysisTools->calculateAverage($s);
+
+    $warStats["{$type}Fame"] = $this->getFieldsToRound("fameRank", $warStats["{$type}Fame"]);
+    $warStats["{$type}BoatAttacks"] = $this->getFieldsToRound("boatAttacksRank", $warStats["{$type}BoatAttacks"] * $boatNorm);
+    $warStats["{$type}DecksUsed"] = $this->getFieldsToRound("decksUsedRank", $warStats["{$type}DecksUsed"] * $decksNorm);
+    $warStats["{$type}Continuity"] = $this->getFieldsToRound("continuity", $calculator($scores));
+
+    return $warStats;
   }
 
   /**

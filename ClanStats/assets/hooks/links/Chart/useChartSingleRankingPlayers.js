@@ -51,7 +51,7 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
       }
       ChartJS.defaults.plugins.legend.onClick.call(legend.chart, evt, legendItem, legend);
     },
-    [selectedCategory]
+    [selectedCategory],
   );
 
   const resetCategories = useCallback(() => {
@@ -81,15 +81,19 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
     });
 
     labels.push("Mediane");
-    playerValuesScore = { Mediane: 0 };
+    labels.push("Moyenne");
+    playerValuesScore = { Mediane: 0, Moyenne: 0 };
     for (const [target, conf] of Object.entries(selectedCategory)) {
-      //if (!conf?.active) continue;
       let newTarget = target.replace("Rank", "");
-      newTarget = "median" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
-      const value = warsStats[currentWar][newTarget] || 0;
-      datasetsMap[target].push(conf.active ? value : 0);
+      const newTargetMedian = "median" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
+      const newTargetAverage = "average" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
+      const valueMedian = warsStats[currentWar][newTargetMedian] || 0;
+      const valueAverage = warsStats[currentWar][newTargetAverage] || 0;
+      datasetsMap[target].push(conf.active ? valueMedian : 0);
+      datasetsMap[target].push(conf.active ? valueAverage : 0);
       if (conf.active) {
-        playerValuesScore["Mediane"] += value;
+        playerValuesScore["Mediane"] += valueMedian;
+        playerValuesScore["Moyenne"] += valueAverage;
       }
     }
 
@@ -118,6 +122,7 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
     const sortedLabels = sortedIndices.map((i) => labels[i]);
 
     const medianeIndex = sortedLabels.indexOf("Mediane");
+    const averageIndex = sortedLabels.indexOf("Moyenne");
 
     const datasSingleRank = Object.entries(defaultConfig).map(([key, conf], index) => {
       const sortedData = sortedIndices.map((i) => datasetsMap[key][i]);
@@ -128,7 +133,7 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
         data: sortedData,
         hidden: !conf.active,
         ...baseColors,
-        borderColor: sortedData.map((_, i) => (i === medianeIndex ? "#6e6e6e" : baseColors.borderColor)),
+        borderColor: sortedData.map((_, i) => (i === medianeIndex || i === averageIndex ? "#6e6e6e" : baseColors.borderColor)),
         stack: "Stack 0",
       };
     });

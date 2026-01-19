@@ -27,6 +27,20 @@ class AnalysisTools
     $this->logger->info("Initialisation de : class 'AnalysisTools'.");
   }
 
+
+  /**
+   * Calcule la moyenne d'un ensemble de valeurs numériques.
+   *
+   * @param array<int|float> $values Tableau de valeurs numériques (peut être non trié)
+   * @return float La moyenne calculée
+   */
+  public function calculateAverage(array $values): float
+  {
+    //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'calculateAverage'.");
+    $total = count($values);
+    return array_sum($values) / $total;
+  }
+
   /**
    * Calcule la médiane d'un ensemble de valeurs numériques.
    *

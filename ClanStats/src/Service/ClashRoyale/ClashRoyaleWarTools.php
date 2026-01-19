@@ -115,6 +115,8 @@ class ClashRoyaleWarTools
         return $warsFiltered;
     }
 
+//TODO mise en Place d'un DTO pour "WarsPlayersStats"
+
     /**
      * Agrège les statistiques de tous les participants aux guerres avec distinction actifs/anciens.
      *
@@ -229,14 +231,50 @@ class ClashRoyaleWarTools
         foreach (self::TARGETS_STATS_WARS as $target) {
             $metric = PlayerMetric::from($target);
             $warsStat = $this->updateMedianWarStat($metric, $warsStat, $playersDto);
+            $warsStat = $this->updateAverageWarStat($metric, $warsStat, $playersDto);
         }
 
         foreach ($warsStat as $key => $stat) {
             $data = array_merge($stat, ["sessionId" => $key]);
             $warsDto[$key] = new WarStatsHistoriqueClanWar($data);
         }
-        $result = array_merge(["warsStats" => $warsDto], ["playersStats" =>  $playersDto]);
-        return $result;
+        //return array_merge(["warsStats" => $warsDto], ["playersStats" =>  $playersDto]);
+        return [
+            "warsStats" => $warsDto,
+            "playersStats" => $playersDto
+        ];
+    }
+
+    /**
+     * Calcule et injecte les moyennes d'une métrique spécifique pour chaque guerre.
+     *
+     * Algorithme :
+     * 1. Pour chaque guerre (sauf "all")
+     * 2. Extrait les scores de tous les joueurs pour la métrique
+     * 3. Calcule la moyennes via AnalysisTools::calculateAverage()
+     * 4. Stocke dans "average{Metric}" (ex: averageFame)
+     *
+     * @param PlayerMetric $metric Métrique à analyser
+     * @param array<string, array<string, mixed>> $warsStat Statistiques des guerres à enrichir
+     * @param array<string, PlayerStatsHistoriqueClanWar> $playersDto DTOs des joueurs avec historique de guerres
+     *
+     * @return array<string, array<string, mixed>> Statistiques enrichies avec moyennes calculées
+     */
+    private function updateAverageWarStat(PlayerMetric $metric, array $warsStat,  array $playersDto)
+    {
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateAverageWarStat'.");
+        foreach ($warsStat as $warKey => $warStat) {
+            if ($warKey !== "all") {
+                $scores = [];
+                foreach ($warStat["players"] as $playerKey) {
+                    $scores[] = $metric->getValue($playersDto[$playerKey], $warKey);
+                }
+                $average = $this->analysisTools->calculateAverage($scores);
+                $averageKey = "average" . ucfirst($metric->value);
+                $warsStat[$warKey][$averageKey] = $average;
+            }
+        }
+        return $warsStat;
     }
 
     /**
