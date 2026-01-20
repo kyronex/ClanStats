@@ -89,7 +89,6 @@ class WarStatsHistoriqueClanWar
         $this->averageBoatAttacks = $data["averageBoatAttacks"] ?? 0;
         $this->averageDecksUsed = $data["averageDecksUsed"] ?? 0;
         $this->averageContinuity = $data["averageContinuity"] ?? 0;
-        //TODO rajouter les moyennes des joueurs
         $this->players = $data["players"] ?? [];
     }
 

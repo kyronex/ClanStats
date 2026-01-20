@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use App\Dto\ClashRoyale\Analysis\PlayerStatsHistoriqueClanWar;
 use App\Dto\ClashRoyale\Analysis\War;
 use App\Dto\ClashRoyale\Analysis\WarStatsHistoriqueClanWar;
+use App\Dto\ClashRoyale\Analysis\PlayerWarsSummary;
 
 use App\Service\ClashRoyale\Analysis\AnalysisTools;
 
@@ -35,6 +36,7 @@ class ClashRoyaleWarTools
         "boatAttacks",
         "decksUsed"
     ];
+    private const AGGREGATION_TYPES = ["median", "average"];
 
     /**
      * Initialise le gestionnaire avec dépendances pour sérialisation et calculs statistiques.
@@ -115,71 +117,148 @@ class ClashRoyaleWarTools
         return $warsFiltered;
     }
 
-//TODO mise en Place d'un DTO pour "WarsPlayersStats"
-
     /**
-     * Agrège les statistiques de tous les participants aux guerres avec distinction actifs/anciens.
+     * @param Clan $currentClan
+     * @param array<int, RiverRaceLog> $riverRaceLog
      *
-     * Calculs effectués par joueur :
-     * - Totaux : totalWarsFame, totalWarsBoatAttacks, totalWarsDecksUsed
-     * - Moyennes : averageWarsFame, averageWarsBoatAttacks, averageWarsDecksUsed
-     * - Participation : totalWarsParticipated (nombre de guerres jouées)
-     * - Statut : currentPlayer (true si membre actuel du clan)
-     *
-     * @param Clan $currentClan Clan actuel avec liste des membres pour déterminer le statut
-     * @param array<int, RiverRaceLog> $riverRaceLog Historique complet des guerres à analyser
-     *
-     * @return array{activeMembers: array<string, array>, exMembers: array<string, array>} Statistiques agrégées séparées par statut
+     * @return array{activeMembers: array<string, PlayerWarsSummary>, exMembers: array<string, PlayerWarsSummary>}
      */
-    public function processGetWarsPlayersStats(Clan $currentClan, array $riverRaceLog)
+    public function processGetWarsPlayersStats(Clan $currentClan, array $riverRaceLog): array
     {
         $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsPlayersStats'.");
-        $playerTags = array_map(function ($player) {
-            return $player->getTag();
-        }, $currentClan->getMembersList());
-        $playersStats = [];
+        $playerTags = array_map(fn($player) => $player->getTag(), $currentClan->getMembersList());
+        $participants = $this->collectParticipants($riverRaceLog);
+        $playersSummaries = [];
+        foreach ($participants as $tag => $wars) {
+            $playersSummaries[$tag] = $this->buildPlayerSummary($tag, $wars, $playerTags);
+        }
+        return $this->separateByMemberStatus($playersSummaries);
+    }
+
+    /**
+     * Collecte toutes les participations groupées par joueur.
+     *
+     * @param array<int, RiverRaceLog> $riverRaceLog
+     * @return array<string, array<string, Participant>>
+     */
+    private function collectParticipants(array $riverRaceLog): array
+    {
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'collectParticipants'.");
+        $participants = [];
         foreach ($riverRaceLog as $riverRace) {
+            $warKey = $riverRace->getSeasonId() . "_" . $riverRace->getSectionIndex();
             foreach ($riverRace->getClans() as $clan) {
                 foreach ($clan->getParticipants() as $participant) {
-                    $playersStats[$participant->getTag()][$riverRace->getSeasonId() . "_" . $riverRace->getSectionIndex()] = $participant;
+                    if ($participant->getFame() === 0 && $participant->getBoatAttacks() === 0 && $participant->getDecksUsed() === 0) {
+                        continue;
+                    }
+                    $participants[$participant->getTag()][$warKey] = $participant;
                 }
             }
         }
-        foreach ($playersStats as $player => $wars) {
-            if (in_array($player, $playerTags)) {
-                $playersStats[$player]["currentPlayer"] = true;
+        return $participants;
+    }
+
+    /**
+     * Construit un PlayerWarsSummary à partir des participations d'un joueur.
+     *
+     * @param string $tag
+     * @param array<string, Participant> $wars
+     * @param array<string> $playerTags
+     * @return PlayerWarsSummary
+     */
+    private function buildPlayerSummary(string $tag, array $wars, array $playerTags): PlayerWarsSummary
+    {
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'buildPlayerSummary'.");
+        $totals = $this->calculateTotals($wars);
+        $warList = $this->buildWarList($wars);
+        $warsCount = count($wars);
+        return new PlayerWarsSummary([
+            "tag" => $tag,
+            "name" => $this->extractPlayerName($wars),
+            "currentPlayer" => in_array($tag, $playerTags, true),
+            "totalWarsParticipated" => $warsCount,
+            "totalWarsFame" => $totals["fame"],
+            "totalWarsBoatAttacks" => $totals["boatAttacks"],
+            "totalWarsDecksUsed" => $totals["decksUsed"],
+            "averageWarsFame" => $warsCount > 0 ? round($totals["fame"] / $warsCount, 4) : 0,
+            "averageWarsBoatAttacks" => $warsCount > 0 ? round($totals["boatAttacks"] / $warsCount, 4) : 0,
+            "averageWarsDecksUsed" => $warsCount > 0 ? round($totals["decksUsed"] / $warsCount, 4) : 0,
+            "warList" => $warList,
+        ]);
+    }
+
+    /**
+     * Construit la liste des guerres pour le DTO War.
+     *
+     * @param array<string, Participant> $wars
+     * @return array<string, array{sessionId: string, fame: int, boatAttacks: int, decksUsed: int}>
+     */
+    private function buildWarList(array $wars): array
+    {
+        $warList = [];
+        foreach ($wars as $warKey => $participant) {
+            $warList[$warKey] = [
+                "sessionId" => $warKey,
+                "fame" => $participant->getFame(),
+                "boatAttacks" => $participant->getBoatAttacks(),
+                "decksUsed" => $participant->getDecksUsed(),
+            ];
+        }
+        return $warList;
+    }
+
+    /**
+     * Calcule les totaux des stats de guerre.
+     *
+     * @param array<string, Participant> $wars
+     * @return array{fame: int, boatAttacks: int, decksUsed: int}
+     */
+    private function calculateTotals(array $wars): array
+    {
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'calculateTotals'.");
+        $totals = ["fame" => 0, "boatAttacks" => 0, "decksUsed" => 0];
+        foreach ($wars as $participant) {
+            $totals["fame"] += $participant->getFame();
+            $totals["boatAttacks"] += $participant->getBoatAttacks();
+            $totals["decksUsed"] += $participant->getDecksUsed();
+        }
+        return $totals;
+    }
+
+    /**
+     * Extrait le nom du joueur depuis ses participations.
+     *
+     * @param array<string, Participant> $wars
+     * @return string
+     */
+    private function extractPlayerName(array $wars): string
+    {
+        $firstParticipation = reset($wars);
+        return $firstParticipation ? $firstParticipation->getName() : "";
+    }
+
+    /**
+     * Sépare les joueurs par statut membre actif/ancien.
+     *
+     * @param array<string, PlayerWarsSummary> $playersSummaries
+     * @return array{activeMembers: array<string, PlayerWarsSummary>, exMembers: array<string, PlayerWarsSummary>}
+     */
+    private function separateByMemberStatus(array $playersSummaries): array
+    {
+        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'separateByMemberStatus'.");
+        $activeMembers = [];
+        $exMembers = [];
+        foreach ($playersSummaries as $tag => $summary) {
+            if ($summary->getCurrentPlayer()) {
+                $activeMembers[$tag] = $summary->toArray();
             } else {
-                $playersStats[$player]["currentPlayer"] = false;
+                $exMembers[$tag] = $summary->toArray();
             }
-            $playersStats[$player]["name"] = "";
-            $playersStats[$player]["totalWarsParticipated"] = count($wars);
-            $totalWarsFame = 0;
-            $totalWarsBoatAttacks = 0;
-            $totalWarsDecksUsed = 0;
-            foreach ($wars as $stats) {
-                if ($playersStats[$player]["name"] == "") {
-                    $playersStats[$player]["name"] = $stats->getName();
-                }
-                $totalWarsFame += $stats->getFame();
-                $totalWarsBoatAttacks += $stats->getBoatAttacks();
-                $totalWarsDecksUsed += $stats->getDecksUsed();
-            }
-            $playersStats[$player]["totalWarsFame"] = $totalWarsFame;
-            $playersStats[$player]["totalWarsBoatAttacks"] = $totalWarsBoatAttacks;
-            $playersStats[$player]["totalWarsDecksUsed"] = $totalWarsDecksUsed;
-            $playersStats[$player]["averageWarsFame"] = round($playersStats[$player]["totalWarsFame"] / $playersStats[$player]["totalWarsParticipated"], 4);
-            $playersStats[$player]["averageWarsBoatAttacks"] = round($playersStats[$player]["totalWarsBoatAttacks"] / $playersStats[$player]["totalWarsParticipated"], 4);
-            $playersStats[$player]["averageWarsDecksUsed"] = round($playersStats[$player]["totalWarsDecksUsed"] / $playersStats[$player]["totalWarsParticipated"], 4);
         }
-        $activeMembers = array_filter($playersStats, function ($player) {
-            return $player["currentPlayer"] === true;
-        });
-        $exMembers = array_filter($playersStats, function ($player) {
-            return $player["currentPlayer"] === false;
-        });
         return [
             "activeMembers" => $activeMembers,
-            "exMembers" => $exMembers
+            "exMembers" => $exMembers,
         ];
     }
 
@@ -201,44 +280,51 @@ class ClashRoyaleWarTools
             "reelMaxBoatAttacks" => 1,
             "reelMinDecksUsed" => PHP_INT_MAX,
             "reelMaxDecksUsed" => 1,
-            "players" => []
+            "players" => [],
+            "medianFame" => 0,
+            "medianBoatAttacks" => 0,
+            "medianDecksUsed" => 0,
+            "medianContinuity" => 0,
+            "averageFame" => 0,
+            "averageBoatAttacks" => 0,
+            "averageDecksUsed" => 0,
+            "averageContinuity" => 0,
         ];
 
         $warsStat = ["all" => $initWarStat];
         foreach ($warsSelected as $key => $war) {
             $warsStat[$war] = $initWarStat;
         }
-
         $listWars = [];
         $playersDto = [];
         foreach ($playersStats as $playerKey => $stats) {
-            foreach ($stats as $key => $value) {
+            $wars = $stats["wars"] ?? [];
+            foreach ($wars as $key => $value) {
                 if (preg_match('/^(\d+)_(\d+)$/', $key, $matches)) {
                     if ($value["decksUsed"] > 0) {
-                        $warsStat = $this->updateReelWarStat($warsStat, $key, $value);
+                        $valueTag = array_merge($value, ["tag" => $stats["tag"]]);
+                        $warsStat = $this->updateReelWarStat($warsStat, $key, $valueTag);
                         $dataWar = array_merge($value, ["sessionId" => $key]);
                         $listWars[$playerKey][$key] = new War($dataWar);
                     }
                 }
             }
             if (isset($listWars[$playerKey])) {
-                $dataPlayer = array_merge(["warList" => $listWars[$playerKey]], ["tag" => $playerKey], ["name" => $stats["name"]], ["currentPlayer" => $stats["currentPlayer"]]);
+                $dataPlayer = array_merge(["warList" => $listWars[$playerKey]], ["tag" => $stats["tag"] ?? $playerKey], ["name" => $stats["name"]], ["currentPlayer" => $stats["currentPlayer"]]);
                 $playersDto[$playerKey] = new PlayerStatsHistoriqueClanWar($dataPlayer);
             }
         }
-
         $warsDto = [];
         foreach (self::TARGETS_STATS_WARS as $target) {
             $metric = PlayerMetric::from($target);
-            $warsStat = $this->updateMedianWarStat($metric, $warsStat, $playersDto);
-            $warsStat = $this->updateAverageWarStat($metric, $warsStat, $playersDto);
+            foreach (self::AGGREGATION_TYPES as $type) {
+                $warsStat = $this->updateAggregatedWarStat($metric, $warsStat, $playersDto, $type);
+            }
         }
-
         foreach ($warsStat as $key => $stat) {
             $data = array_merge($stat, ["sessionId" => $key]);
             $warsDto[$key] = new WarStatsHistoriqueClanWar($data);
         }
-        //return array_merge(["warsStats" => $warsDto], ["playersStats" =>  $playersDto]);
         return [
             "warsStats" => $warsDto,
             "playersStats" => $playersDto
@@ -246,65 +332,32 @@ class ClashRoyaleWarTools
     }
 
     /**
-     * Calcule et injecte les moyennes d'une métrique spécifique pour chaque guerre.
-     *
-     * Algorithme :
-     * 1. Pour chaque guerre (sauf "all")
-     * 2. Extrait les scores de tous les joueurs pour la métrique
-     * 3. Calcule la moyennes via AnalysisTools::calculateAverage()
-     * 4. Stocke dans "average{Metric}" (ex: averageFame)
+     * Calcule et injecte une statistique agrégée pour chaque guerre.
      *
      * @param PlayerMetric $metric Métrique à analyser
-     * @param array<string, array<string, mixed>> $warsStat Statistiques des guerres à enrichir
-     * @param array<string, PlayerStatsHistoriqueClanWar> $playersDto DTOs des joueurs avec historique de guerres
+     * @param array<string, array<string, mixed>> $warsStat Statistiques des guerres
+     * @param array<string, PlayerStatsHistoriqueClanWar> $playersDto DTOs des joueurs
+     * @param string $aggregationType Type d'agrégation ("average" ou "median")
      *
-     * @return array<string, array<string, mixed>> Statistiques enrichies avec moyennes calculées
+     * @return array<string, array<string, mixed>> Statistiques enrichies
      */
-    private function updateAverageWarStat(PlayerMetric $metric, array $warsStat,  array $playersDto)
+    private function updateAggregatedWarStat(PlayerMetric $metric, array $warsStat, array $playersDto, string $aggregationType): array
     {
-        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateAverageWarStat'.");
         foreach ($warsStat as $warKey => $warStat) {
-            if ($warKey !== "all") {
-                $scores = [];
-                foreach ($warStat["players"] as $playerKey) {
-                    $scores[] = $metric->getValue($playersDto[$playerKey], $warKey);
-                }
-                $average = $this->analysisTools->calculateAverage($scores);
-                $averageKey = "average" . ucfirst($metric->value);
-                $warsStat[$warKey][$averageKey] = $average;
+            if ($warKey === "all") {
+                continue;
             }
-        }
-        return $warsStat;
-    }
-
-    /**
-     * Calcule et injecte les médianes d'une métrique spécifique pour chaque guerre.
-     *
-     * Algorithme :
-     * 1. Pour chaque guerre (sauf "all")
-     * 2. Extrait les scores de tous les joueurs pour la métrique
-     * 3. Calcule la médiane via AnalysisTools::calculateMedian()
-     * 4. Stocke dans "median{Metric}" (ex: medianFame)
-     *
-     * @param PlayerMetric $metric Métrique à analyser
-     * @param array<string, array<string, mixed>> $warsStat Statistiques des guerres à enrichir
-     * @param array<string, PlayerStatsHistoriqueClanWar> $playersDto DTOs des joueurs avec historique de guerres
-     *
-     * @return array<string, array<string, mixed>> Statistiques enrichies avec médianes calculées
-     */
-    private function updateMedianWarStat(PlayerMetric $metric, array $warsStat,  array $playersDto)
-    {
-        //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateMedianWarStat'.");
-        foreach ($warsStat as $warKey => $warStat) {
-            if ($warKey !== "all") {
-                $scores = [];
-                foreach ($warStat["players"] as $playerKey) {
-                    $scores[] = $metric->getValue($playersDto[$playerKey], $warKey);
-                }
-                $median = $this->analysisTools->calculateMedian($scores);
-                $medianKey = "median" . ucfirst($metric->value);
-                $warsStat[$warKey][$medianKey] = $median;
+            $scores = [];
+            foreach ($warStat["players"] as $playerKey) {
+                $scores[] = $metric->getValue($playersDto[$playerKey], $warKey);
             }
+            $value = match ($aggregationType) {
+                "average" => $this->analysisTools->calculateAverage($scores),
+                "median" => $this->analysisTools->calculateMedian($scores),
+                default => throw new \InvalidArgumentException("Type inconnu: $aggregationType")
+            };
+            $statKey = $aggregationType . ucfirst($metric->value);
+            $warsStat[$warKey][$statKey] = $value;
         }
         return $warsStat;
     }
@@ -321,8 +374,7 @@ class ClashRoyaleWarTools
     private function updateReelWarStat(array $warStat, string $key, array $data): array
     {
         //$this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'updateReelWarStat'.");
-        $targets = ["fame", "boatAttacks", "decksUsed"];
-        foreach ($targets as $target) {
+        foreach (self::TARGETS_STATS_WARS as $target) {
             if ($warStat[$key]["reelMax" . ucfirst($target)] < $data[$target]) {
                 $warStat[$key]["reelMax" . ucfirst($target)] = $data[$target];
                 if ($warStat["all"]["reelMax" . ucfirst($target)] < $data[$target]) {

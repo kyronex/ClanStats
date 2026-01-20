@@ -11,35 +11,35 @@ use App\Dto\ClashRoyale\RiverRace\Participant;
 class Clan
 {
     #[Assert\Type("integer")]
-    #[Groups(["ajaxed","clanInfoFlat"])]
+    #[Groups(["ajaxed", "clanInfoFlat"])]
     private int $rank;
 
     #[Assert\Type("integer")]
-    #[Groups(["ajaxed","clanInfoFlat"])]
+    #[Groups(["ajaxed", "clanInfoFlat"])]
     private int $trophyChange;
 
     #[Assert\Type("integer")]
-    #[Groups(["ajaxed","clanInfoDeep"])]
+    #[Groups(["ajaxed", "clanInfoDeep"])]
     private int $badgeId;
 
     #[Assert\Type("integer")]
-    #[Groups(["ajaxed","clanInfoDeep"])]
+    #[Groups(["ajaxed", "clanInfoDeep"])]
     private int $clanScore;
 
     #[Assert\Type("integer")]
-    #[Groups(["ajaxed","clanInfoDeep"])]
+    #[Groups(["ajaxed", "clanInfoDeep"])]
     private int $fame;
 
     #[Assert\NotBlank]
-    #[Groups(["ajaxed","clanInfoDeep"])]
+    #[Groups(["ajaxed", "clanInfoDeep"])]
     private string $finishTime;
 
     #[Assert\NotBlank]
-    #[Groups(["ajaxed","clanInfoDeep"])]
+    #[Groups(["ajaxed", "clanInfoDeep"])]
     private string $name;
 
     #[Assert\NotBlank]
-    #[Groups(["ajaxed","clanInfoDeep"])]
+    #[Groups(["ajaxed", "clanInfoDeep"])]
     private string $tag;
 
     #[Assert\NotNull]

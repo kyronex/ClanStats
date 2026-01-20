@@ -24,7 +24,7 @@ const useHistoriqueClanWar = () => {
             totalWarsDecksUsed: playerData.totalWarsDecksUsed,
             totalWarsFame: playerData.totalWarsFame,
             totalWarsParticipated: playerData.totalWarsParticipated,
-            wars: Object.entries(playerData)
+            wars: Object.entries(playerData.wars)
               .filter(([key]) => key.match(/^\d+_\d+$/))
               .map(([warKey, warData]) => ({
                 warId: warKey,
@@ -64,7 +64,7 @@ const useHistoriqueClanWar = () => {
         return { success: false, data: [], message: MESSAGES.API_FAILURE };
       }
     },
-    [execute]
+    [execute],
   );
 
   return {
