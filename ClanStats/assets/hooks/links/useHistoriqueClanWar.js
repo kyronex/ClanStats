@@ -2,12 +2,7 @@ import { useCallback } from "react";
 import { useFetch } from "../../hooks";
 
 const useHistoriqueClanWar = () => {
-  const { execute, isLoading, errors, hasErrors, clearErrors } = useFetch();
-  const MESSAGES = {
-    API_FAILURE: "Échec de la requête",
-    NO_RESULT_DATA: "Aucune donnée dans la réponse",
-    TECHNICAL_ERROR: "Erreur technique",
-  };
+  const { execute, isLoading, errors, hasErrors, clearErrors, MESSAGES } = useFetch();
 
   const historiqueClanWar = useCallback(
     async (clan, warsSelected, activeMembers, exMembers, taskId) => {

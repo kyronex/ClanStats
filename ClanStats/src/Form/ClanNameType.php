@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-// TODO Retirer "value" => "moustachue", 
+
 class ClanNameType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -19,7 +19,6 @@ class ClanNameType extends AbstractType
             ->add("nomClan", TextType::class, [
                 "label" => "Nom Clan : ",
                 "attr" => [
-                    "value" => "moustachue",
                     "placeholder" => "Entrez nom du clan",
                     "class" => "form-control",
                     "data-ajax-field" => "true"

@@ -1,16 +1,23 @@
 import { useClanSearch } from "../hooks";
 import React, { useState } from "react";
+import { SearchClanInput } from "../types";
 
-function ClanSearchForm({ onSearchResults }) {
+type ClanSearchFormProps = {
+  onSearchResults: (results: any[]) => void;
+};
+
+function ClanSearchForm({ onSearchResults }: ClanSearchFormProps) {
   const { searchClans, isLoading, errors, hasErrors, clearErrors } = useClanSearch();
-  const [formData, setFormData] = useState({
+  const [uiMessage, setUiMessage] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState<SearchClanInput>({
     nomClan: "",
     minMembers: "",
     maxMembers: "",
     minScore: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -21,27 +28,24 @@ function ClanSearchForm({ onSearchResults }) {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = await searchClans(formData, onSearchResults);
+    setUiMessage(null);
+    const result = await searchClans(formData);
     if (result.success) {
-      console.log(`✅ ${result.count} clans trouvés`);
+      onSearchResults(result.data);
+      if (result.message) {
+        setUiMessage(result.message);
+      }
     } else {
-      console.log(`❌ Recherche échouée: ${result.message}`);
+      setUiMessage(result.message || "Une erreur est survenue");
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      {hasErrors && (
-        <div className="alert alert-danger">
-          <ul>
-            {errors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {hasErrors && errors.general && <div className="alert alert-danger">{errors.general}</div>}
+      {uiMessage && <div className="alert alert-warning">{uiMessage}</div>}
 
       <div className="form-group">
         <label htmlFor="nomClan">Nom Clan : </label>
@@ -58,7 +62,6 @@ function ClanSearchForm({ onSearchResults }) {
         />
         {errors.nomClan && <div className="invalid-feedback d-block">{errors.nomClan}</div>}
       </div>
-
       <div className="form-group">
         <label htmlFor="minMembers">Membres minimum :</label>
         <input
@@ -74,7 +77,6 @@ function ClanSearchForm({ onSearchResults }) {
         />
         {errors.minMembers && <div className="invalid-feedback d-block">{errors.minMembers}</div>}
       </div>
-
       <div className="form-group">
         <label htmlFor="maxMembers">Membres maximum :</label>
         <input
@@ -90,7 +92,6 @@ function ClanSearchForm({ onSearchResults }) {
         />
         {errors.maxMembers && <div className="invalid-feedback d-block">{errors.maxMembers}</div>}
       </div>
-
       <div className="form-group">
         <label htmlFor="minScore">Score minimum :</label>
         <input
@@ -106,12 +107,10 @@ function ClanSearchForm({ onSearchResults }) {
         />
         {errors.minScore && <div className="invalid-feedback d-block">{errors.minScore}</div>}
       </div>
-
       <button type="submit" className="btn btn-primary" disabled={isLoading}>
         {isLoading ? (
           <>
-            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>⏳
-            Chargement...
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>⏳ Chargement...
           </>
         ) : (
           "Rechercher"

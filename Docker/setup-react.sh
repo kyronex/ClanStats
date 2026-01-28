@@ -1,10 +1,25 @@
 #!/bin/bash
 set -e
 
-echo "🔧 Configuration React avec Webpack Encore optimisé..."
+echo "🔧 Configuration React + TypeScript avec Webpack Encore..."
 
+# -------------------------------------------------
+# 📦 Dépendances DEV
+# -------------------------------------------------
 echo "📦 Installation dépendances dev..."
-npm install --save-dev @symfony/webpack-encore webpack-notifier @babel/core @babel/preset-env @babel/preset-react babel-loader @babel/plugin-proposal-class-properties @babel/plugin-transform-modules-commonjs
+npm install --save-dev \
+  @symfony/webpack-encore \
+  webpack-notifier \
+  @babel/core \
+  @babel/preset-env \
+  @babel/preset-react \
+  @babel/preset-typescript \
+  babel-loader \
+  @babel/plugin-proposal-class-properties \
+  @babel/plugin-transform-modules-commonjs \
+  typescript \
+  @types/react \
+  @types/react-dom
 
 echo "📦 Installation React 18 exacte..."
 npm install react@18.2.0 react-dom@18.2.0 --save --exact
@@ -30,13 +45,14 @@ if (!Encore.isRuntimeEnvironmentConfigured())
 	Encore.configureRuntimeEnvironment(process.env.NODE_ENV || "dev");
 Encore.setOutputPath("public/build/")
 	.setPublicPath("/build")
-	.addEntry("app", "./assets/app.js")
+	.addEntry("app", "./assets/app.tsx")
 	.splitEntryChunks()
 	.enableSingleRuntimeChunk()
 	.cleanupOutputBeforeBuild()
 	.enableBuildNotifications()
 	.enableSourceMaps(!Encore.isProduction())
 	.enableVersioning(Encore.isProduction())
+  .enableBabelTypeScriptPreset()
 	.configureBabel((config) => {
     config.presets = [
       [
@@ -55,6 +71,7 @@ Encore.setOutputPath("public/build/")
           runtime: "automatic", // ← CRUCIAL
         },
       ],
+			"@babel/preset-typescript"
     ];
     config.plugins = ["@babel/plugin-proposal-class-properties"];
   })
@@ -152,14 +169,16 @@ cat > package.json <<'EOF'
     "file-loader": "^6.0.0",
     "sass": "^1.0.0",
     "sass-loader": "^13.0.0",
-    "webpack-notifier": "^1.6.0"
+    "webpack-notifier": "^1.6.0",
+		"typescript": "^5.3.0"
   },
   "private": true,
   "scripts": {
     "dev-server": "encore dev-server",
     "dev": "encore dev",
     "watch": "encore dev --watch",
-    "build": "encore production --progress"
+    "build": "encore production --progress",
+		"typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "react": "18.2.0",
@@ -170,71 +189,26 @@ cat > package.json <<'EOF'
 }
 EOF
 
-echo "⚛️ Écriture assets/app.js..."
-cat > assets/app.js <<'EOF'
-//import './styles/app.scss';
-import "./styles/app.css";
-import ClanSearchForm from "./components/ClanSearchForm.jsx";
-import Test from "./components/Test.jsx";
-import React from "react";
+echo "📄 Écriture tsconfig.json..."
+cat > tsconfig.json <<'EOF'
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "react-jsx",
 
-let createRoot;
-try {
-	createRoot = require("react-dom/client").createRoot;
-} catch (e) {
-	console.warn("react-dom/client non disponible, fallback vers react-dom");
-	const ReactDOM = require("react-dom");
-	createRoot = (container) => ({
-		render: (el) => ReactDOM.render(el, container),
-	});
-}
+    "strict": false,
+    "noEmit": true,
+    "isolatedModules": true,
 
-let rootTest = null;
-let rootClanSearchForm = null;
-function render() {
-	const mountTest = document.getElementById("react-app");
-	const mountClanSearchForm = document.getElementById("react-clan-search");
-	if (mountTest) {
-		if (!rootTest) {
-			rootTest = createRoot(mountTest);
-		}
-		rootTest.render(<Test />);
-	}
-	if (mountClanSearchForm) {
-		if (!rootClanSearchForm) {
-			rootClanSearchForm = createRoot(mountClanSearchForm);
-		}
-		rootClanSearchForm.render(<ClanSearchForm />);
-	}
-}
-render();
-if (module.hot) {
-	console.log("🔥 HMR available");
-	module.hot.accept((err) => {
-		if (err) console.error("HMR error", err);
-		else render();
-	});
-	// 🎯 ACCEPTER TOUT LE DOSSIER COMPONENTS
-	module.hot.accept(
-		require.context("./components", true, /\.(js|jsx)$/),
-		() => {
-			console.log("🔄 HMR: Component modifié dans ./components/ !");
-			render();
-		}
-	);
-	module.hot.accept("./styles/app.css", () => console.log("🎨 CSS reloaded"));
-}
-EOF
+    "allowJs": true,
+    "checkJs": false,
 
-echo "🎨 Écriture assets/styles/app.css..."
-cat > assets/styles/app.css <<'EOF'
-.clanstats-app{max-width:800px;margin:2rem auto;padding:2rem;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;color:#fff;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-.clanstats-app h1{font-size:2rem;margin-bottom:1rem}
-.hot-reload-demo{margin:1.5rem 0}
-.hot-reload-demo button{margin:.4rem;padding:.6rem 1rem;border:none;border-radius:8px;cursor:pointer}
-.hot-reload-demo .btn-primary{background:#28a745;color:#fff}
-.hot-reload-demo .btn-secondary{background:#17a2b8;color:#fff}
-.hot-reload-info{background:rgba(255,255,255,.08);padding:1rem;border-radius:8px;margin-top:1rem}
+    "moduleResolution": "bundler",
+    "skipLibCheck": true
+  },
+  "include": ["assets/**/*"]
+}
 EOF
 
 echo "📦 Nettoyage avant install..."

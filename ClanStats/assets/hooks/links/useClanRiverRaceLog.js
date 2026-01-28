@@ -2,12 +2,7 @@ import { useCallback } from "react";
 import { useFetch } from "../../hooks";
 
 const useClanRiverRaceLog = () => {
-  const { execute, isLoading, errors, hasErrors, clearErrors } = useFetch();
-  const MESSAGES = {
-    API_FAILURE: "Échec de la requête",
-    NO_RESULT_DATA: "Aucune donnée dans la réponse",
-    TECHNICAL_ERROR: "Erreur technique",
-  };
+  const { execute, isLoading, errors, hasErrors, clearErrors, MESSAGES } = useFetch();
 
   const clanRiverRaceLog = useCallback(
     async (clan) => {
@@ -54,7 +49,7 @@ const useClanRiverRaceLog = () => {
         return { success: false, data: [], message: MESSAGES.API_FAILURE };
       }
     },
-    [execute]
+    [execute],
   );
 
   return {

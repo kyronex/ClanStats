@@ -421,16 +421,19 @@ cat > package.json <<'EOF'
   "private": true,
   "devDependencies": {
     "@babel/core": "^7.17.0",
+    "@babel/plugin-proposal-class-properties": "^7.16.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@babel/preset-env": "^7.16.0",
     "@babel/preset-react": "^7.16.0",
     "@symfony/webpack-encore": "^4.0.0",
-    "webpack": "^5.0.0",
-    "webpack-cli": "^4.9.0",
-    "webpack-dev-server": "^4.7.0",
-    "babel-loader": "^8.2.3",
-    "css-loader": "^6.5.1",
-    "style-loader": "^3.3.1",
-    "file-loader": "^6.2.0"
+    "babel-loader": "^8.0.0",
+    "core-js": "^3.23.0",
+    "css-loader": "^6.0.0",
+    "file-loader": "^6.0.0",
+    "sass": "^1.0.0",
+    "sass-loader": "^13.0.0",
+    "webpack-notifier": "^1.6.0",
+    "typescript": "^5.3.0"
   },
   "dependencies": {
     "react": "18.2.0",
@@ -439,11 +442,11 @@ cat > package.json <<'EOF'
     "react-chartjs-2": "^5.2.0"
   },
   "scripts": {
-    "dev-server": "encore dev-server --hot --host 0.0.0.0 --port 8081 --allowed-hosts all",
+    "dev-server": "encore dev-server",
     "dev": "encore dev",
     "watch": "encore dev --watch",
     "build": "encore production --progress"
-  }
+  },
 }
 EOF
 

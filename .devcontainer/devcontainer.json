@@ -1,0 +1,20 @@
+{
+  "name": "ClanStats Dev",
+
+  "dockerComposeFile": ["../Docker/docker-compose.yml"],
+
+  "service": "web",
+
+  "workspaceFolder": "/var/www",
+
+  "shutdownAction": "stopCompose",
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "bmewburn.vscode-intelephense-client"],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  }
+}
