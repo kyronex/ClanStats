@@ -21,6 +21,7 @@ use App\Service\ClanStatsTools;
 
 
 // TODO fair PHPDOC GENERICS
+// TODO modifier repertoire /ClanStats par /app
 final class ClanStatsController extends AbstractController
 {
     private LoggerInterface $logger;

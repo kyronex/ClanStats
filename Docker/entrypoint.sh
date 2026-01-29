@@ -11,7 +11,13 @@ if [ ! -f "composer.json" ]; then
     composer require symfony/asset:6.4.* symfony/form:6.4.* symfony/http-client:6.4.* symfony/monolog-bundle symfony/security-bundle:6.4.* symfony/serializer:6.4.* symfony/twig-bundle:6.4.* symfony/validator:6.4.* phpdocumentor/reflection-docblock:^5.6 phpstan/phpdoc-parser:^2.1
 else
     echo "✅ Projet Symfony détecté"
-    [ ! -d "vendor" ] && echo "📦 Installation Composer..." && composer install
+    # ✅ CHANGEMENT 1 : Vérification fichier précis au lieu du dossier
+    if [ ! -f "vendor/autoload_runtime.php" ]; then
+        echo "📦 Installation Composer..."
+        composer install --no-interaction --optimize-autoloader
+    else
+        echo "✅ Vendor OK"
+    fi
 fi
 
 # React
@@ -21,11 +27,13 @@ if [ ! -f ".react-configured" ]; then
     setup-react
 else
     echo "✅ React configuré"
-    
-    if [ ! -d "node_modules" ] || [ ! -f "node_modules/@babel/plugin-transform-modules-commonjs/package.json" ]; then
+
+    # ✅ CHANGEMENT 2 : Vérification React au lieu de Babel
+    if [ ! -d "node_modules" ] || [ ! -f "node_modules/react/package.json" ]; then
         echo "📦 Installation npm..."
-        [ ! -f "node_modules/@babel/plugin-transform-modules-commonjs/package.json" ] && npm install --save-dev @babel/plugin-transform-modules-commonjs
         npm install
+    else
+        echo "✅ Node modules OK"
     fi
 
     if ! node -e "require('react-dom/client')" 2>/dev/null; then
@@ -33,14 +41,19 @@ else
         npm install react@^18.2.0 react-dom@^18.2.0
     fi
 
-    echo "🏗️ Build assets..."
-    rm -rf node_modules/.cache 2>/dev/null || true
-    
-    if npm run dev; then
-        echo "✅ Build dev OK"
+    # ✅ CHANGEMENT 3 : Build seulement si assets manquants
+    if [ ! -f "public/build/app.js" ] || [ ! -f "public/build/manifest.json" ]; then
+        echo "🏗️ Build assets..."
+        rm -rf node_modules/.cache 2>/dev/null || true
+
+        if npm run dev; then
+            echo "✅ Build dev OK"
+        else
+            echo "⚠️  Fallback build production..."
+            npm run build || { echo "🔧 Rebuild complet..."; rm -rf public/build/* node_modules; npm install; npm run build; }
+        fi
     else
-        echo "⚠️  Fallback build production..."
-        npm run build || { echo "🔧 Rebuild complet..."; rm -rf public/build/* node_modules; npm install; npm run build; }
+        echo "✅ Assets déjà présents"
     fi
 
     if [ -f "public/build/app.js" ]; then

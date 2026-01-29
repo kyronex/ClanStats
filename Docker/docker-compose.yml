@@ -50,7 +50,7 @@ services:
     networks:
       - clan-stats-network
     depends_on:
-     - db
+      - db
 
   ngrok:
     image: ngrok/ngrok:latest

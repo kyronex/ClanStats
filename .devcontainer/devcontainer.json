@@ -5,7 +5,7 @@
 
   "service": "web",
 
-  "workspaceFolder": "/var/www",
+  "workspaceFolder": "/var/www/html",
 
   "shutdownAction": "stopCompose",
 

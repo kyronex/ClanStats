@@ -1,2 +1,5 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+
+# Force LF pour tous les scripts shell
+*.sh text eol=lf
+entrypoint.sh text eol=lf
+setup-react.sh text eol=lf

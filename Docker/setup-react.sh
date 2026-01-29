@@ -193,22 +193,28 @@ echo "📄 Écriture tsconfig.json..."
 cat > tsconfig.json <<'EOF'
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2020",
+    "lib": ["DOM", "ES2020"],
     "module": "ESNext",
+    "moduleResolution": "Node",
     "jsx": "react-jsx",
 
     "strict": false,
-    "noEmit": true,
-    "isolatedModules": true,
-
-    "allowJs": true,
+    "noImplicitAny": true,
     "checkJs": false,
 
-    "moduleResolution": "bundler",
-    "skipLibCheck": true
+    "allowJs": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true
   },
-  "include": ["assets/**/*"]
+  "include": ["assets/**/*"],
+  "exclude": ["node_modules", "vendor"]
 }
+
 EOF
 
 echo "📦 Nettoyage avant install..."
