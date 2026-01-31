@@ -1,3 +1,6 @@
 export type SearchClanInput = {
-  [key: string]: string;
+  nomClan?: string;
+  minMembers?: string;
+  maxMembers?: string;
+  minScore?: string;
 };

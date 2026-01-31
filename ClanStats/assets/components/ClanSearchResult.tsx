@@ -1,8 +1,13 @@
-import { useTableSort } from "../hooks";
 import { BoutonSort } from "../components";
-import React, { useState } from "react";
+import { useTableSort } from "../hooks";
+import { ClanSearch, SortLabels } from "../types";
 
-function ClanSearchResult({ clans, onClanSelect }) {
+type ClanSearchResultProps = {
+  clans: ClanSearch[];
+  onClanSelect: (clan: ClanSearch) => void;
+};
+
+function ClanSearchResult({ clans, onClanSelect }: ClanSearchResultProps) {
   if (!clans || clans.length === 0) {
     return (
       <div>
@@ -10,23 +15,22 @@ function ClanSearchResult({ clans, onClanSelect }) {
       </div>
     );
   }
-
-  const [keysSort] = useState({
+  const SORT_LABELS: SortLabels = {
     name: "🏰 Nom",
     tag: "🏷️ Tag",
     clanScore: "🏆 Score",
     clanWarTrophies: "⚔️ Trophées",
     donationsPerWeek: "🎁 Donations",
     members: "👥 Membres",
-  });
+  };
 
   const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
-    keysSort,
-    clans
+    SORT_LABELS,
+    clans,
   );
 
   // 🎯 Gestion de la sélection d'un clan
-  const handleSelectClan = (clan) => {
+  const handleSelectClan = (clan: ClanSearch) => {
     if (onClanSelect) {
       onClanSelect(clan);
     }
@@ -35,10 +39,10 @@ function ClanSearchResult({ clans, onClanSelect }) {
   return (
     <div>
       <h3>Résultats de recherche ({clans.length} clan(s) trouvé(s))</h3>
-      <table border="1">
+      <table border={1}>
         <thead>
           <tr>
-            {Object.entries(keysSort).map(([key, label]) => (
+            {Object.entries(SORT_LABELS).map(([key, label]) => (
               <th key={key}>
                 {label} <br />
                 <BoutonSort cle={key} handleEnabledSorts={handleEnabledSorts} handleWaySorts={handleWaySorts} tabConfSort={tabConfSort} />
@@ -58,9 +62,7 @@ function ClanSearchResult({ clans, onClanSelect }) {
               <td>{clan.clanScore ? clan.clanScore.toLocaleString() : "N/A"}</td>
               <td>{clan.clanWarTrophies ? clan.clanWarTrophies.toLocaleString() : "N/A"}</td>
               <td>{clan.donationsPerWeek ? clan.donationsPerWeek.toLocaleString() : "N/A"}</td>
-              <td>
-                {clan.members}/{clan.type === "open" ? "50" : "50"}
-              </td>
+              <td>{clan.members}/50</td>
               <td>
                 <button onClick={() => handleSelectClan(clan)} type="button">
                   ✅ Sélectionner

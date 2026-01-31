@@ -1,34 +1,35 @@
 import { useCallback } from "react";
 import { useFetch } from "../../hooks";
+import { Result, ClanApiResponse, ClanSearch, ClanInfo } from "../../types";
 
 const useClanInfo = () => {
   const { execute, isLoading, errors, hasErrors, clearErrors, MESSAGES } = useFetch();
 
   const clanInfo = useCallback(
-    async (clan) => {
+    async (clan: ClanSearch): Promise<Result<ClanInfo>> => {
       clearErrors();
       try {
-        const result = await execute("/clanstats/clan", {
+        const result = await execute<ClanApiResponse>("/clanstats/clan", {
           method: "POST",
           body: JSON.stringify({ tag: clan.tag }),
         });
         if (!result?.success) {
           console.log("❌ Échec API - Status non success:", result?.message || MESSAGES.TECHNICAL_ERROR);
-          return { success: false, data: [], message: result?.message || MESSAGES.TECHNICAL_ERROR };
+          return { success: false, data: null, message: result?.message || MESSAGES.TECHNICAL_ERROR };
         }
         if (!result.clan) {
           console.log("❌ Pas de propriété clans dans la réponse");
-          return { success: false, data: [], message: MESSAGES.NO_RESULT_DATA };
+          return { success: false, data: null, message: MESSAGES.NO_RESULT_DATA };
         }
 
-        const clanFind = {
+        const clanFind: ClanInfo = {
           name: result.clan.name,
           tag: result.clan.tag,
           clanScore: result.clan.clanScore,
           clanWarTrophies: result.clan.clanWarTrophies,
           donationsPerWeek: result.clan.donationsPerWeek,
           members: result.clan.members,
-          membersList: result.clan.membersList?.map((member) => ({
+          memberList: result.clan.memberList?.map((member) => ({
             name: member.name,
             tag: member.tag,
             expLevel: member.expLevel,
@@ -44,7 +45,7 @@ const useClanInfo = () => {
         return { success: true, data: clanFind, message: "" };
       } catch (error) {
         console.error("💥 Erreur lors de la recherche:", error);
-        return { success: false, data: [], message: MESSAGES.API_FAILURE };
+        return { success: false, data: null, message: MESSAGES.API_FAILURE };
       }
     },
     [execute],

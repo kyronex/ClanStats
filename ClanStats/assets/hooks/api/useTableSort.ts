@@ -1,14 +1,28 @@
 import { useState, useCallback, useMemo } from "react";
-const useTableSort = (initialKeys = [], initialData) => {
-  const [tabConfSort, setConfTabSort] = useState(() => {
-    const config = {};
+import { TabConfSort, SortColumnConfig } from "../../types";
+
+type UseTableSortReturn<T> = {
+  tabConfSort: TabConfSort;
+  sortedData: T[];
+  handleWaySorts: (key: string) => void;
+  handleResetSorts: () => void;
+  handleEnabledSorts: (key: string) => void;
+  handleShowTabConfSorts: () => void;
+};
+
+const useTableSort = <T extends { [key: string]: any }>(
+  initialKeys: { [key: string]: string } = {},
+  initialData: T[],
+): UseTableSortReturn<T> => {
+  const [tabConfSort, setConfTabSort] = useState<TabConfSort>(() => {
+    const config: Record<string, SortColumnConfig> = {};
     for (let key of Object.keys(initialKeys)) {
       config[key] = { sort: true, active: false, order: 0 };
     }
     return config;
   });
 
-  const handleWaySorts = useCallback((key) => {
+  const handleWaySorts = useCallback((key: string) => {
     setConfTabSort((prev) => {
       if (key in prev) {
         return {
@@ -23,7 +37,7 @@ const useTableSort = (initialKeys = [], initialData) => {
 
   const handleResetSorts = useCallback(() => {
     setConfTabSort((prev) => {
-      const result = {};
+      const result: TabConfSort = {};
       for (const key of Object.keys(prev)) {
         result[key] = { sort: true, active: false, order: 0 };
       }
@@ -31,7 +45,7 @@ const useTableSort = (initialKeys = [], initialData) => {
     });
   }, []);
 
-  const handleEnabledSorts = useCallback((key) => {
+  const handleEnabledSorts = useCallback((key: string) => {
     setConfTabSort((prev) => {
       if (key in prev) {
         if (!prev[key].active) {
@@ -44,7 +58,7 @@ const useTableSort = (initialKeys = [], initialData) => {
             [key]: { ...prev[key], active: true, order: orderMax + 1 },
           };
         } else {
-          const updatedSorts = {};
+          const updatedSorts: TabConfSort = {};
           Object.entries(prev).forEach(([nameKey, conf]) => {
             if (nameKey === key) {
               updatedSorts[key] = {
@@ -74,10 +88,10 @@ const useTableSort = (initialKeys = [], initialData) => {
     console.log(tabConfSort);
   }, [tabConfSort]);
 
-  const sortedData = useMemo(() => {
-    const createMultiCriteriaComparator = (activeSorts) => {
+  const sortedData = useMemo((): T[] => {
+    const createMultiCriteriaComparator = (activeSorts: Record<string, SortColumnConfig>) => {
       const confSorts = Object.entries(activeSorts).sort((a, b) => a[1].order - b[1].order);
-      return (a, b) => {
+      return (a: T, b: T): number => {
         // Teste chaque critère séquentiellement
         for (const [key, config] of confSorts) {
           let comp = 0;
@@ -101,7 +115,7 @@ const useTableSort = (initialKeys = [], initialData) => {
     };
 
     //const activeSorts = Object.entries(tabConfSort).filter(([key, config]) => config.active === true);
-    const activeSorts = {};
+    const activeSorts: Record<string, SortColumnConfig> = {};
     for (const key in tabConfSort) {
       if (tabConfSort[key].active === true) {
         activeSorts[key] = tabConfSort[key];
@@ -118,7 +132,7 @@ const useTableSort = (initialKeys = [], initialData) => {
        return element[1].order === step;
      });
      */
-    const processedData = [...initialData].sort(createMultiCriteriaComparator(activeSorts));
+    const processedData: T[] = [...initialData].sort(createMultiCriteriaComparator(activeSorts));
     return processedData;
   }, [initialData, tabConfSort]);
 

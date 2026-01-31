@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { ClanSearch } from "../../types";
 
 const useClanWorkflow = () => {
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedClan, setSelectedClan] = useState(null);
+  const [searchResults, setSearchResults] = useState<ClanSearch[]>([]);
+  const [selectedClan, setSelectedClan] = useState<ClanSearch>(null);
   const [activeMembers, setActiveMembers] = useState([]);
   const [exMembers, setExMembers] = useState([]);
   const [taskId, setTaskId] = useState("");

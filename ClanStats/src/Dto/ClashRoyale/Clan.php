@@ -57,7 +57,7 @@ class Clan
     ])]
     #[Valid]
     #[Groups(["ajaxed"])]
-    private array $membersList;
+    private array $memberList;
 
     public function __construct(array $data)
     {
@@ -76,9 +76,9 @@ class Clan
 
     private function createDtoMembers(array $members): void
     {
-        $this->membersList = [];
+        $this->memberList = [];
         foreach ($members as $memberData) {
-            $this->membersList[] = new Member($memberData);
+            $this->memberList[] = new Member($memberData);
         }
     }
 
@@ -132,8 +132,8 @@ class Clan
         return $this->members;
     }
 
-    public function getMembersList(): array
+    public function getMemberList(): array
     {
-        return $this->membersList;
+        return $this->memberList;
     }
 }

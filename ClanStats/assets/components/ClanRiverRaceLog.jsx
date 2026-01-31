@@ -1,7 +1,6 @@
-import { useHistoriqueClanWar, useClanRiverRaceLog, useToggleSet, useTableSort } from "../hooks";
-import { BoutonSort } from "../components";
-
 import React, { useState, useEffect, useCallback, memo } from "react";
+import { BoutonSort } from "../components";
+import { useHistoriqueClanWar, useClanRiverRaceLog, useToggleSet, useTableSort } from "../hooks";
 
 function ClanRiverRaceLog({ clan, activeMembers, exMembers, taskId }) {
   const {
@@ -190,7 +189,7 @@ const TableClans = memo(function TableClans({ riverRaceLog, rowId, handleShowedR
 
   const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
     keysSort,
-    riverRaceLog.clans
+    riverRaceLog.clans,
   );
 
   return (
@@ -257,7 +256,7 @@ const TableParticipants = memo(function TableParticipants({ participants, rowIdC
 
   const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
     keysSort,
-    participants
+    participants,
   );
 
   return (

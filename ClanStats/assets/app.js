@@ -1,6 +1,6 @@
 import "./styles/app.css";
-import ClanStatsContainer from "./containers/ClanStatsContainer";
 import { createRoot } from "react-dom/client";
+import ClanStatsContainer from "./containers/ClanStatsContainer";
 
 let root = null;
 function render() {

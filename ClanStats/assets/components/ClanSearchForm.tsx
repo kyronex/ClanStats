@@ -1,9 +1,9 @@
-import { useClanSearch } from "../hooks";
 import React, { useState } from "react";
-import { SearchClanInput } from "../types";
+import { useClanSearch } from "../hooks";
+import { SearchClanInput, ClanSearch } from "../types";
 
 type ClanSearchFormProps = {
-  onSearchResults: (results: any[]) => void;
+  onSearchResults: (results: ClanSearch[]) => void;
 };
 
 function ClanSearchForm({ onSearchResults }: ClanSearchFormProps) {

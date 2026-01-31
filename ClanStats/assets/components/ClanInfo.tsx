@@ -1,12 +1,14 @@
-import { useClanInfo, useTableSort } from "../hooks";
+import { useState, useEffect } from "react";
 import { BoutonSort } from "../components";
+import { useClanInfo, useTableSort } from "../hooks";
+import { ClanSearch } from "../types";
+import type { ClanInfo as ClanInfoType } from "../types";
+type ClanInfoProps = {
+  clan: ClanSearch;
+};
 
-import React, { useState, useEffect } from "react";
-
-function ClanInfo({ clan }) {
-  const [clanData, setClanData] = useState({
-    membersList: [],
-  });
+function ClanInfo({ clan }: ClanInfoProps) {
+  const [clanData, setClanData] = useState<ClanInfoType | null>(null);
   const [showClanMembers, setShowClanMembers] = useState(false);
   const { clanInfo, isLoading, errors, hasErrors, clearErrors } = useClanInfo();
 
@@ -25,7 +27,7 @@ function ClanInfo({ clan }) {
 
   const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
     keysSort,
-    clanData.membersList
+    clanData?.memberList ?? [],
   );
 
   useEffect(() => {
@@ -37,7 +39,6 @@ function ClanInfo({ clan }) {
         return;
       }
       if (result.success) {
-        console.log(`✅ ${result.data.name} clan trouvés`);
         setClanData(result.data);
         clearErrors();
       } else {
@@ -61,7 +62,7 @@ function ClanInfo({ clan }) {
           <table id="clan-info-table" className="table table-striped">
             <thead>
               <tr>
-                <th colSpan="2">Informations du Clan</th>
+                <th colSpan={2}>Informations du Clan</th>
               </tr>
             </thead>
             <tbody>
@@ -118,7 +119,7 @@ function ClanInfo({ clan }) {
               </tr>
               {showClanMembers && (
                 <tr>
-                  <td colSpan="2">
+                  <td colSpan={2}>
                     <table className="table table-sm members-table">
                       <thead>
                         <tr>

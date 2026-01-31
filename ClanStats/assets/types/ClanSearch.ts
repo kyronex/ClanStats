@@ -1,4 +1,4 @@
-export type Clan = {
+export type ClanSearch = {
   name: string;
   tag: string;
   clanScore: number;

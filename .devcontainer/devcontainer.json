@@ -13,6 +13,9 @@
     "vscode": {
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "bmewburn.vscode-intelephense-client"],
       "settings": {
+        "git.decorations.enabled": true,
+        "explorer.decorations.colors": true,
+        "explorer.decorations.badges": true,
         "typescript.tsdk": "node_modules/typescript/lib"
       }
     }

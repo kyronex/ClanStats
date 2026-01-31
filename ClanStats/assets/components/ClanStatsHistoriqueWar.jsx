@@ -1,9 +1,7 @@
-import { useClanStatsHistoriqueWar } from "../hooks";
-
+import React, { useEffect } from "react";
 import ComparePlayers from "./Chart/ComparePlayers.jsx";
 import RankingPlayers from "./Chart/RankingPlayers.jsx";
-
-import React, { useEffect } from "react";
+import { useClanStatsHistoriqueWar } from "../hooks";
 
 function ClanStatsHistoriqueWar({ taskId }) {
   const { data: rData, status, isLoading, hasErrors } = useClanStatsHistoriqueWar(taskId);

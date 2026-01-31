@@ -1,11 +1,5 @@
 import { useState, useCallback } from "react";
-import { FetchErrors } from "../../types";
-
-interface ApiResponse {
-  success?: boolean;
-  errors?: FetchErrors;
-  [key: string]: unknown;
-}
+import { FetchErrors, ApiResponse } from "../../types";
 
 const useFetch = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);

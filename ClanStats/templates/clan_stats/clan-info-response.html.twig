@@ -49,9 +49,9 @@
             </tr>
             <tr>
                 <td>
-                    <button 
+                    <button
                         class="btn btn-sm btn-primary"
-                        data-action="clanInfo#togglerShow" 
+                        data-action="clanInfo#togglerShow"
                         data-target-toggler="membersClan_{{ clan.tag }}">
                         +
                     </button>
@@ -75,7 +75,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for member in clan.membersList %}
+                            {% for member in clan.memberList %}
                             <tr>
                                 <td>{{ member.name }}</td>
                                 <td>{{ member.tag }}</td>
@@ -87,7 +87,7 @@
                                 <td>{{ member.donations|number_format }}</td>
                                 <td>{{ member.donationsReceived|number_format }}</td>
                                 <td>{{ member.lastSeen }}</td>
-                            </tr>    
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>

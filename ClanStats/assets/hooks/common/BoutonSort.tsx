@@ -1,7 +1,14 @@
-import { memo } from "react";
-import React from "react";
+import React, { memo } from "react";
+import { TabConfSort } from "../../types";
 
-const BoutonSort = memo(function BoutonSort({ cle, handleEnabledSorts, handleWaySorts, tabConfSort }) {
+type BoutonSortProps = {
+  cle: string;
+  handleEnabledSorts: (key: string) => void;
+  handleWaySorts: (key: string) => void;
+  tabConfSort: TabConfSort;
+};
+
+const BoutonSort = memo(function BoutonSort({ cle, handleEnabledSorts, handleWaySorts, tabConfSort }: BoutonSortProps) {
   const enabledSorts = () => handleEnabledSorts(cle);
   const waySorts = () => handleWaySorts(cle);
   return (

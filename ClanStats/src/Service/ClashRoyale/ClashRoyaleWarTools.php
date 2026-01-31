@@ -126,7 +126,7 @@ class ClashRoyaleWarTools
     public function processGetWarsPlayersStats(Clan $currentClan, array $riverRaceLog): array
     {
         $this->logger->info("Lancement de : class 'ClashRoyaleWarTools' function 'processGetWarsPlayersStats'.");
-        $playerTags = array_map(fn($player) => $player->getTag(), $currentClan->getMembersList());
+        $playerTags = array_map(fn($player) => $player->getTag(), $currentClan->getMemberList());
         $participants = $this->collectParticipants($riverRaceLog);
         $playersSummaries = [];
         foreach ($participants as $tag => $wars) {

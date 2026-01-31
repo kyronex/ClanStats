@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { useFetch } from "../../hooks";
-import { Result, Clan, SearchClanInput } from "../../types";
+import { Result, ClanSearch, SearchClanInput } from "../../types";
 
 const useClanSearch = () => {
   const { execute, isLoading, errors, hasErrors, clearErrors, MESSAGES } = useFetch();
 
   const searchClans = useCallback(
-    async (searchData: SearchClanInput): Promise<Result<Clan[]>> => {
+    async (searchData: SearchClanInput): Promise<Result<ClanSearch[]>> => {
       clearErrors();
       try {
         const result = await execute("/clanstats/search", {
@@ -22,7 +22,7 @@ const useClanSearch = () => {
           return { success: true, data: [], message: MESSAGES.NO_RESULT_DATA };
         }
 
-        const clans: Clan[] = result.clans.map((clan) => ({
+        const clans: ClanSearch[] = result.clans.map((clan) => ({
           name: clan.name,
           tag: clan.tag,
           clanScore: clan.clanScore,

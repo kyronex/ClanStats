@@ -1,7 +1,6 @@
-import { useToggleSet, useTableSort } from "../hooks";
-import { BoutonSort } from "../components";
-
 import React, { useState, useEffect, useRef, memo } from "react";
+import { BoutonSort } from "../components";
+import { useToggleSet, useTableSort } from "../hooks";
 
 function ClanHistoriqueWar({ members, membersClan }) {
   const componentRef = useRef(null);
@@ -21,7 +20,7 @@ function ClanHistoriqueWar({ members, membersClan }) {
 
   const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
     keysSort,
-    members
+    members,
   );
 
   useEffect(() => {
