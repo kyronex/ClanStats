@@ -15,11 +15,11 @@ const useClanSearch = () => {
         });
 
         if (!result) {
-          return { success: false, data: [] };
+          return { success: false, data: null };
         }
 
         if (!Array.isArray(result.clans) || result.clans.length === 0) {
-          return { success: true, data: [], message: MESSAGES.NO_RESULT_DATA };
+          return { success: true, data: null, message: MESSAGES.NO_RESULT_DATA };
         }
 
         const clans: ClanSearch[] = result.clans.map((clan) => ({
@@ -32,7 +32,7 @@ const useClanSearch = () => {
         }));
         return { success: true, data: clans };
       } catch (error) {
-        return { success: false, data: [], message: MESSAGES.API_FAILURE };
+        return { success: false, data: null, message: MESSAGES.API_FAILURE };
       }
     },
     [execute, clearErrors],

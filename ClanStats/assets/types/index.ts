@@ -6,3 +6,5 @@ export * from "./SortLabels";
 export * from "./TabConfSort";
 export * from "./ClanInfo";
 export * from "./ApiResponse";
+export * from "./HistoriqueClanWar";
+export * from "./RiverRaceLog";

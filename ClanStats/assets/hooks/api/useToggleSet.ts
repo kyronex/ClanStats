@@ -1,9 +1,23 @@
 import { useCallback, useState, useMemo } from "react";
-const useToggleSet = (initialItems = [], options = {}) => {
+
+type UseToggleSetOptions = {
+  maxSize?: number;
+};
+
+type UseToggleSetReturn<T> = {
+  toggle: (id: T) => void;
+  has: (id: T) => boolean;
+  set: Set<T>;
+  replace: (newSet: Set<T> | T[]) => void;
+  clear: () => void;
+  hash: string;
+};
+
+const useToggleSet = <T extends string | number>(initialItems: T[] = [], options: UseToggleSetOptions = {}): UseToggleSetReturn<T> => {
   const [set, setSet] = useState(() => new Set(initialItems));
   const { maxSize } = options;
   const toggle = useCallback(
-    (id) => {
+    (id: T) => {
       setSet((prev) => {
         if (maxSize && !prev.has(id) && prev.size >= maxSize) {
           return prev;
@@ -13,12 +27,12 @@ const useToggleSet = (initialItems = [], options = {}) => {
         return newSet;
       });
     },
-    [maxSize]
+    [maxSize],
   );
 
-  const has = useCallback((id) => set.has(id), [set]);
+  const has = useCallback((id: T) => set.has(id), [set]);
 
-  const replace = useCallback((newSet) => {
+  const replace = useCallback((newSet: Set<T> | T[]) => {
     setSet(newSet instanceof Set ? newSet : new Set(newSet));
   }, []);
 

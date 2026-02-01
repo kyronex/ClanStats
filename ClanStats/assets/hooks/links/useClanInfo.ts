@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useFetch } from "../../hooks";
-import { Result, ClanApiResponse, ClanSearch, ClanInfo } from "../../types";
+import { Result, ClanInfoApiResponse, ClanSearch, ClanInfo } from "../../types";
 
 const useClanInfo = () => {
   const { execute, isLoading, errors, hasErrors, clearErrors, MESSAGES } = useFetch();
@@ -9,7 +9,7 @@ const useClanInfo = () => {
     async (clan: ClanSearch): Promise<Result<ClanInfo>> => {
       clearErrors();
       try {
-        const result = await execute<ClanApiResponse>("/clanstats/clan", {
+        const result = await execute<ClanInfoApiResponse>("/clanstats/clan", {
           method: "POST",
           body: JSON.stringify({ tag: clan.tag }),
         });

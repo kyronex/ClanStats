@@ -24,10 +24,7 @@ function ClanSearchResult({ clans, onClanSelect }: ClanSearchResultProps) {
     members: "👥 Membres",
   };
 
-  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
-    SORT_LABELS,
-    clans,
-  );
+  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts } = useTableSort(SORT_LABELS, clans);
 
   // 🎯 Gestion de la sélection d'un clan
   const handleSelectClan = (clan: ClanSearch) => {

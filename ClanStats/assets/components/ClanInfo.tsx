@@ -10,7 +10,7 @@ type ClanInfoProps = {
 function ClanInfo({ clan }: ClanInfoProps) {
   const [clanData, setClanData] = useState<ClanInfoType | null>(null);
   const [showClanMembers, setShowClanMembers] = useState(false);
-  const { clanInfo, isLoading, errors, hasErrors, clearErrors } = useClanInfo();
+  const { clanInfo, clearErrors } = useClanInfo();
 
   const [keysSort] = useState({
     name: "Nom",
@@ -25,10 +25,7 @@ function ClanInfo({ clan }: ClanInfoProps) {
     lastSeen: "Dernière Connexion",
   });
 
-  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
-    keysSort,
-    clanData?.memberList ?? [],
-  );
+  const { tabConfSort, sortedData, handleWaySorts, handleEnabledSorts } = useTableSort(keysSort, clanData?.memberList ?? []);
 
   useEffect(() => {
     let isCancelled = false;

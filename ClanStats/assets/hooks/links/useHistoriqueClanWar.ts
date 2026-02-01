@@ -1,17 +1,25 @@
 import { useCallback } from "react";
 import { useFetch } from "../../hooks";
+import { Result, HistoriqueClanWarApiResponse, HistoriqueClanWar, ClanSearch } from "../../types";
+
+type HistoriqueClanWarData = {
+  activeMembers: HistoriqueClanWar[];
+  exMembers: HistoriqueClanWar[];
+  taskId: string;
+};
 
 const useHistoriqueClanWar = () => {
   const { execute, isLoading, errors, hasErrors, clearErrors, MESSAGES } = useFetch();
 
   const historiqueClanWar = useCallback(
-    async (clan, warsSelected, activeMembers, exMembers, taskId) => {
+    async (clan: ClanSearch, warsSelected: Set<string | number>): Promise<Result<HistoriqueClanWarData>> => {
       clearErrors();
       try {
-        const formatMembers = (membersData) =>
+        const formatMembers = (membersData: HistoriqueClanWar[]) =>
           Object.entries(membersData).map(([playerTag, playerData]) => ({
             tag: playerTag,
             name: playerData.name,
+            currentPlayer: playerData.currentPlayer,
             averageWarsBoatAttacks: playerData.averageWarsBoatAttacks,
             averageWarsDecksUsed: playerData.averageWarsDecksUsed,
             averageWarsFame: playerData.averageWarsFame,
@@ -33,30 +41,27 @@ const useHistoriqueClanWar = () => {
           clanTag: clan.tag,
           warsSelected: Array.from(warsSelected),
         };
-        const result = await execute("/clanstats/historiqueClanWar", {
+        const result = await execute<HistoriqueClanWarApiResponse>("/clanstats/historiqueClanWar", {
           method: "POST",
           body: JSON.stringify(dataRequest),
         });
         if (!result?.success) {
           console.log("❌ Échec API - Status non success:", result?.message || MESSAGES.TECHNICAL_ERROR);
-          return { success: false, data: [], message: result?.message || MESSAGES.TECHNICAL_ERROR };
+          return { success: false, data: null, message: result?.message || MESSAGES.TECHNICAL_ERROR };
         }
-        if (!result.exMembers || !result.activeMembers) {
+        if (!result.exMembers || !result.activeMembers || !result.taskId) {
           console.log("❌ Pas de propriété exMembers ou activeMembers dans la réponse");
-          return { success: false, data: [], message: MESSAGES.NO_RESULT_DATA };
-        }
-        if (!result.taskId) {
-          console.log("❌ Pas de propriété taskId dans la réponse");
-          return { success: false, data: [], message: MESSAGES.NO_RESULT_DATA };
+          return { success: false, data: null, message: MESSAGES.NO_RESULT_DATA };
         }
 
-        exMembers(formatMembers(result.exMembers));
-        activeMembers(formatMembers(result.activeMembers));
-        taskId(result.taskId);
-        return { success: true, data: [], message: "" };
+        return {
+          success: true,
+          data: { activeMembers: formatMembers(result.activeMembers), exMembers: formatMembers(result.exMembers), taskId: result.taskId },
+          message: "",
+        };
       } catch (error) {
         console.error("💥 Erreur lors de la requête:", error);
-        return { success: false, data: [], message: MESSAGES.API_FAILURE };
+        return { success: false, data: null, message: MESSAGES.API_FAILURE };
       }
     },
     [execute],

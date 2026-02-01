@@ -1,5 +1,5 @@
 export type Result<T> = {
   success: boolean;
-  data?: T | null;
+  data: T | null;
   message?: string;
 };

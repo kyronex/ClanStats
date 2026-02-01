@@ -50,7 +50,7 @@ const useTableSort = <T extends { [key: string]: any }>(
       if (key in prev) {
         if (!prev[key].active) {
           let orderMax = 0;
-          Object.entries(prev).forEach(([key, value]) => {
+          Object.values(prev).forEach((value) => {
             if (value.order > orderMax) orderMax = value.order;
           });
           return {
