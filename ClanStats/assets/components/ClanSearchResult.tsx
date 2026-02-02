@@ -1,6 +1,6 @@
 import { BoutonSort } from "../components";
 import { useTableSort } from "../hooks";
-import { ClanSearch, SortLabels } from "../types";
+import type { ClanSearch, SortLabels } from "../types";
 
 type ClanSearchResultProps = {
   clans: ClanSearch[];

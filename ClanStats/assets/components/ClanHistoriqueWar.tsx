@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useRef, memo } from "react";
 import { BoutonSort } from "../components";
 import { useToggleSet, useTableSort } from "../hooks";
+import type { HistoriqueClanWar, War } from "../types";
 
-function ClanHistoriqueWar({ members, membersClan }) {
+type ClanHistoriqueWarProps = {
+  members: HistoriqueClanWar[];
+  membersClan: boolean;
+};
+
+function ClanHistoriqueWar({ members, membersClan }: ClanHistoriqueWarProps) {
   const componentRef = useRef(null);
-  const { toggle: handleShowedMembers, has: isShowedMember, set: showedMembers } = useToggleSet();
+  const { toggle: handleShowedMembers, has: isShowedMember } = useToggleSet();
 
   const [keysSort] = useState({
     tag: "Tag",
@@ -18,10 +24,7 @@ function ClanHistoriqueWar({ members, membersClan }) {
     averageWarsDecksUsed: "Average Decks Used",
   });
 
-  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts, handleShowTabConfSorts } = useTableSort(
-    keysSort,
-    members,
-  );
+  const { tabConfSort, sortedData, handleWaySorts, handleResetSorts, handleEnabledSorts } = useTableSort(keysSort, members);
 
   useEffect(() => {
     if (componentRef.current) {
@@ -35,10 +38,10 @@ function ClanHistoriqueWar({ members, membersClan }) {
       <table className="table table-striped">
         <thead className="table-dark">
           <tr>
-            <th colSpan="9">Historique des guerres</th>
+            <th colSpan={9}>Historique des guerres</th>
           </tr>
           <tr>
-            <th colSpan="9">
+            <th colSpan={9}>
               {membersClan ? "Membres actifs :" : "Ex membres :"} {members.length}
             </th>
           </tr>
@@ -51,7 +54,6 @@ function ClanHistoriqueWar({ members, membersClan }) {
             ))}
             <th>
               <button onClick={handleResetSorts}>Reset Sort</button>
-              {/* <button onClick={handleShowTabConfSorts}>View</button> */}
             </th>
           </tr>
         </thead>
@@ -72,7 +74,13 @@ function ClanHistoriqueWar({ members, membersClan }) {
   );
 }
 
-const MembersTable = memo(function MembersTable({ member, handleShowedMembers, isShowedMember }) {
+type MembersTableProps = {
+  member: HistoriqueClanWar;
+  handleShowedMembers: (tag: string) => void;
+  isShowedMember: (tag: string) => boolean;
+};
+
+const MembersTable = memo(function MembersTable({ member, handleShowedMembers, isShowedMember }: MembersTableProps) {
   const handleClick = () => handleShowedMembers(member.tag);
   return (
     <React.Fragment>
@@ -97,13 +105,17 @@ const MembersTable = memo(function MembersTable({ member, handleShowedMembers, i
   );
 });
 
-const MemberTable = memo(function MemberTable({ member }) {
+type MemberTableProps = {
+  member: HistoriqueClanWar;
+};
+
+const MemberTable = memo(function MemberTable({ member }: MemberTableProps) {
   return (
     <tr>
-      <td colSpan="9">
+      <td colSpan={9}>
         <table className="table table-sm">
           <thead>
-            <tr colSpan="9">
+            <tr>
               <th>Session Id</th>
               <th>Fame</th>
               <th>Boat Attacks</th>
@@ -121,7 +133,11 @@ const MemberTable = memo(function MemberTable({ member }) {
   );
 });
 
-const WarItem = memo(function WarItem({ war }) {
+type WarItemProps = {
+  war: War;
+};
+
+const WarItem = memo(function WarItem({ war }: WarItemProps) {
   return (
     <tr>
       <td>{war.warId}</td>

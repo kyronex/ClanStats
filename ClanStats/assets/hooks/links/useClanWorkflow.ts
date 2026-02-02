@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { ClanSearch } from "../../types";
+import type { ClanSearch, HistoriqueClanWar } from "../../types";
 
 const useClanWorkflow = () => {
   const [searchResults, setSearchResults] = useState<ClanSearch[]>([]);
   const [selectedClan, setSelectedClan] = useState<ClanSearch>(null);
-  const [activeMembers, setActiveMembers] = useState([]);
-  const [exMembers, setExMembers] = useState([]);
+  const [activeMembers, setActiveMembers] = useState<HistoriqueClanWar[]>([]);
+  const [exMembers, setExMembers] = useState<HistoriqueClanWar[]>([]);
   const [taskId, setTaskId] = useState("");
   //const [taskId, setTaskId] = useState("dataTask_#QPJC0JG9_697b18fa64a3e8.25042039");
 

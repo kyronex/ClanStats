@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { TabConfSort, SortColumnConfig } from "../../types";
+import type { TabConfSort, SortColumnConfig } from "../../types";
 
 type UseTableSortReturn<T> = {
   tabConfSort: TabConfSort;
@@ -83,6 +83,7 @@ const useTableSort = <T extends { [key: string]: any }>(
     });
   }, []);
 
+  /* <button onClick={handleShowTabConfSorts}>View</button> */
   const handleShowTabConfSorts = useCallback(() => {
     console.log(`handleShowTabConfSorts`);
     console.log(tabConfSort);

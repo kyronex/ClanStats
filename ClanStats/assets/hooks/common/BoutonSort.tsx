@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { TabConfSort } from "../../types";
+import type { TabConfSort } from "../../types";
 
 type BoutonSortProps = {
   cle: string;

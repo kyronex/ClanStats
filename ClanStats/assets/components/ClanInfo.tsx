@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BoutonSort } from "../components";
 import { useClanInfo, useTableSort } from "../hooks";
-import { ClanSearch } from "../types";
+import type { ClanSearch } from "../types";
 import type { ClanInfo as ClanInfoType } from "../types";
 type ClanInfoProps = {
   clan: ClanSearch;

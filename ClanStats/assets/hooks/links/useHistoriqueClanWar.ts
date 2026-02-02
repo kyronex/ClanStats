@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useFetch } from "../../hooks";
-import { Result, HistoriqueClanWarApiResponse, HistoriqueClanWar, ClanSearch } from "../../types";
+import type { Result, HistoriqueClanWarApiResponse, HistoriqueClanWar, ClanSearch } from "../../types";
 
 type HistoriqueClanWarData = {
   activeMembers: HistoriqueClanWar[];

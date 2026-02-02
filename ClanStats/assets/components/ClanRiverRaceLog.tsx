@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from "react";
 import { BoutonSort } from "../components";
 import { useHistoriqueClanWar, useClanRiverRaceLog, useToggleSet, useTableSort } from "../hooks";
-import { ClanSearch, HistoriqueClanWar, Clan, Participant } from "../types";
+import type { ClanSearch, HistoriqueClanWar, Clan, Participant } from "../types";
 import type { RiverRaceLog as RiverRaceLogType } from "../types";
 
 type ClanRiverRaceLogProps = {

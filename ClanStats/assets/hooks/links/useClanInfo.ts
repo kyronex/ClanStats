@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useFetch } from "../../hooks";
-import { Result, ClanInfoApiResponse, ClanSearch, ClanInfo } from "../../types";
+import type { Result, ClanInfoApiResponse, ClanSearch, ClanInfo } from "../../types";
 
 const useClanInfo = () => {
   const { execute, isLoading, errors, hasErrors, clearErrors, MESSAGES } = useFetch();
