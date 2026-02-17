@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useChartColorSettings } from "../../../hooks";
+import type { WarStatsHistoriqueClanWar, PlayerStats, CategorySettings, CategoryKey /*, CategoryConfig */ } from "../../../types";
 
 import {
   Chart as ChartJS,
@@ -13,19 +14,25 @@ import {
   CategoryScale,
   BarElement,
   Title,
+  type ChartOptions,
+  type TooltipItem,
 } from "chart.js";
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
-const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
+
+const useChartRankingPlayers = (
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar },
+  filteredData: { [key: string]: PlayerStats },
+  warsSelected: Set<string>,
+) => {
   const { getColorSettingByIndex } = useChartColorSettings();
 
-  const defaultConfig = {
+  const defaultConfig: CategorySettings = {
     continuity: { label: "Continuity", active: false },
     fameRank: { label: "Fame Rank", active: true },
     boatAttacksRank: { label: "Boat Attacks", active: true },
     decksUsedRank: { label: "Decks Used", active: true },
   };
-
-  const [optionCategory, setOptionCategory] = useState(defaultConfig);
+  const [optionCategory, setOptionCategory] = useState<CategorySettings>(defaultConfig);
 
   const chartRefRank = useRef(null);
 
@@ -46,7 +53,7 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
     const labels = Array.from(warsSelected).sort();
     let maxScore = 0;
 
-    const shuffleArray = (array) => {
+    const shuffleArray = <T>(array: T[]): T[] => {
       const shuffled = [...array];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -56,18 +63,17 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
     };
 
     const datasRank = shuffleArray(Object.entries(filteredData))
-      .map(([key, data], index) => {
+      .map(([_, data], index) => {
         // if (!labels.every((label) => data.scoresFinal?.[label])) return null;
-
         let playerValuesScore = [];
         let playerValuesDetails = [];
         for (const warKey of labels) {
           let score = 0;
-          let details = {};
+          let details: Record<string, number> = {};
           if (data.scoresFinal?.[warKey]) {
             for (const [target, conf] of Object.entries(optionCategory)) {
               if (!conf?.active) continue;
-              const value = data.scoresFinal?.[warKey][target] || 0;
+              const value = (data.scoresFinal?.[warKey][target] as number) || 0;
               score += value;
               details[target] = value;
             }
@@ -99,7 +105,7 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
     };
   }, [filteredData, warsSelected, optionCategory]);
 
-  const optionsRank = useMemo(() => {
+  const optionsRank: ChartOptions<"line"> = useMemo(() => {
     const safeMaxScore = dynamicMaxScore || 100;
     return {
       responsive: true,
@@ -129,7 +135,7 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
         tooltip: {
           mode: "index",
           intersect: false,
-          itemSort: (a, b) => b.raw - a.raw,
+          itemSort: (a: TooltipItem<"line">, b: TooltipItem<"line">) => (b.raw as number) - (a.raw as number),
         },
       },
 
@@ -143,7 +149,7 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
             maxRotation: 45, // ✅ Rotation des labels si besoin
             minRotation: 0,
             callback: function (value, index) {
-              const label = this.getLabelForValue(value);
+              const label = this.getLabelForValue(value as number);
               const datasets = this.chart.data.datasets;
               let count = 0;
               datasets.forEach((dataset) => {
@@ -184,7 +190,7 @@ const useChartRankingPlayers = (warsStats, filteredData, warsSelected) => {
     };
   }, [dynamicMaxScore]);
 
-  const toggleCategory = (key) => {
+  const toggleCategory = (key: CategoryKey) => {
     setOptionCategory((prev) => ({
       ...prev,
       [key]: {

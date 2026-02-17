@@ -1,5 +1,7 @@
+type ChartType = "radar" | "bar" | "line";
+
 const useChartColorSettings = () => {
-  const createColorSettingHSL = (hue, saturation = 70, lightness = 50) => ({
+  const createColorSettingHSL = (hue: number, saturation = 70, lightness = 50) => ({
     radar: {
       backgroundColor: "transparent",
       borderColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
@@ -43,7 +45,7 @@ const useChartColorSettings = () => {
     },
   });
 
-  const getColorSettingByIndex = (index, total, chartType = "line") => {
+  const getColorSettingByIndex = (index: number, total: number, chartType: ChartType = "line") => {
     const ORIGINAL_COLORS = [
       { hue: 206, saturation: 82, lightness: 57 },
       { hue: 347, saturation: 100, lightness: 69 },
@@ -55,7 +57,7 @@ const useChartColorSettings = () => {
     // Zones à éviter (±20° autour des originaux)
     const FORBIDDEN_ZONES = [206, 347, 180, 43, 260];
 
-    const isNearForbidden = (hue) => {
+    const isNearForbidden = (hue: number) => {
       return FORBIDDEN_ZONES.some((zone) => {
         const diff = Math.abs(hue - zone);
         return Math.min(diff, 360 - diff) < 20;

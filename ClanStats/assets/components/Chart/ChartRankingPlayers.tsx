@@ -1,12 +1,17 @@
-import React from "react";
 import { useChartRankingPlayers } from "../../hooks";
-
+import type { WarStatsHistoriqueClanWar, PlayerStats, CategoryKey } from "../../types";
 import { Line } from "react-chartjs-2";
-const ChartRankingPlayers = ({ warsStats, filteredData, warsSelected }) => {
+
+type ChartRankingPlayersProps = {
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar };
+  filteredData: { [key: string]: PlayerStats };
+  warsSelected: Set<string>;
+};
+const ChartRankingPlayers = ({ warsStats, filteredData, warsSelected }: ChartRankingPlayersProps) => {
   const { isEmpty, chartRefRank, optionsRank, formatedRankData, optionCategory, toggleCategory } = useChartRankingPlayers(
     warsStats,
     filteredData,
-    warsSelected
+    warsSelected,
   );
 
   if (isEmpty) {
@@ -24,7 +29,7 @@ const ChartRankingPlayers = ({ warsStats, filteredData, warsSelected }) => {
         }}
       >
         {Object.entries(optionCategory)?.map(([categoryKey, categoryData]) => {
-          const handleChange = () => toggleCategory(categoryKey);
+          const handleChange = () => toggleCategory(categoryKey as CategoryKey);
           return (
             <label
               key={categoryKey}

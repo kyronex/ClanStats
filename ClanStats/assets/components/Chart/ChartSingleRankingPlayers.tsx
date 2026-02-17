@@ -1,12 +1,18 @@
-import React from "react";
 import { useChartSingleRankingPlayers } from "../../hooks";
-
+import type { WarStatsHistoriqueClanWar, PlayerStats } from "../../types";
 import { Bar } from "react-chartjs-2";
-const ChartSingleRankingPlayers = ({ warsStats, filteredData, warsSelected }) => {
+
+type ChartSingleRankingPlayersProps = {
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar };
+  filteredData: { [key: string]: PlayerStats };
+  warsSelected: Set<string>;
+};
+
+const ChartSingleRankingPlayers = ({ warsStats, filteredData, warsSelected }: ChartSingleRankingPlayersProps) => {
   const { isEmpty, chartRefSingleRank, optionsSingleRank, formatedSingleRankData } = useChartSingleRankingPlayers(
     warsStats,
     filteredData,
-    warsSelected
+    warsSelected,
   );
 
   if (isEmpty) {

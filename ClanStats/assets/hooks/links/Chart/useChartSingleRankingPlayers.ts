@@ -1,5 +1,14 @@
 import { useMemo, useRef, useCallback, useState } from "react";
 import { useChartColorSettings } from "../../../hooks";
+import type {
+  WarStatsHistoriqueClanWar,
+  PlayerStats,
+  CategorySettings,
+  CategoryConfig,
+  CategoryKey,
+  DatasetsMap,
+  Score,
+} from "../../../types";
 
 import {
   Chart as ChartJS,
@@ -13,33 +22,45 @@ import {
   CategoryScale,
   BarElement,
   Title,
+  type ChartEvent,
+  type LegendItem,
+  type LegendElement,
+  type TooltipItem,
 } from "chart.js";
-
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
-const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => {
+
+const useChartSingleRankingPlayers = (
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar },
+  filteredData: { [key: string]: PlayerStats },
+  warsSelected: Set<string>,
+) => {
   const { getColorSettingByIndex } = useChartColorSettings();
 
-  const calculateOptimalMaxScoreChart = (playerValuesScore) => {
+  const calculateOptimalMaxScoreChart = (playerValuesScore: Record<string, number>) => {
     const totalMax = Math.max(...Object.values(playerValuesScore));
     const maxWith110Percent = totalMax * 1.1;
     const roundedMax = Math.ceil(maxWith110Percent / 10) * 10;
     return roundedMax;
   };
-  const defaultConfig = {
+
+  const defaultConfig: CategorySettings = {
     continuity: { label: "Continuity", active: true },
     fameRank: { label: "Fame Rank", active: true },
     boatAttacksRank: { label: "Boat Attacks", active: true },
     decksUsedRank: { label: "Decks Used", active: true },
   };
-  const chartRefSingleRank = useRef(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategorySettings>(defaultConfig);
+
+  const chartRefSingleRank = useRef<ChartJS<"bar"> | null>(null);
   const currentWar = Array.from(warsSelected)[0];
-  const [selectedCategory, setSelectedCategory] = useState(defaultConfig);
 
   const handleClickChartRefSingleRank = useCallback(
-    (evt, legendItem, legend) => {
+    (evt: ChartEvent, legendItem: LegendItem, legend: LegendElement<"bar">) => {
       const datasetLabel = legendItem.text;
-      const metricKey = Object.entries(selectedCategory).find(([key, config]) => config.label === datasetLabel)?.[0];
 
+      const metricKey = (Object.entries(selectedCategory) as [CategoryKey, CategoryConfig][]).find(
+        ([_, config]) => config.label === datasetLabel,
+      )?.[0];
       if (metricKey) {
         setSelectedCategory((prev) => ({
           ...prev,
@@ -53,10 +74,6 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
     },
     [selectedCategory],
   );
-
-  const resetCategories = useCallback(() => {
-    setSelectedCategory(defaultConfig);
-  }, []);
 
   const isEmpty =
     Object.keys(filteredData).length === 0 ||
@@ -72,23 +89,24 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
       };
     }
 
-    const labels = [];
-    const datasetsMap = {};
-    let playerValuesScore = {};
+    const labels: string[] = [];
+    const datasetsMap: DatasetsMap = {} as DatasetsMap;
+    let playerValuesScore: Record<string, number> = {};
 
-    Object.keys(selectedCategory).forEach((key) => {
+    (Object.keys(selectedCategory) as CategoryKey[]).forEach((key) => {
       datasetsMap[key] = [];
     });
 
     labels.push("Mediane");
     labels.push("Moyenne");
     playerValuesScore = { Mediane: 0, Moyenne: 0 };
-    for (const [target, conf] of Object.entries(selectedCategory)) {
+    for (const [target, conf] of Object.entries(selectedCategory) as [CategoryKey, CategoryConfig][]) {
       let newTarget = target.replace("Rank", "");
       const newTargetMedian = "median" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
       const newTargetAverage = "average" + newTarget.charAt(0).toUpperCase() + newTarget.slice(1);
-      const valueMedian = warsStats[currentWar][newTargetMedian] || 0;
-      const valueAverage = warsStats[currentWar][newTargetAverage] || 0;
+
+      const valueMedian = (warsStats[currentWar][newTargetMedian] as number) || 0;
+      const valueAverage = (warsStats[currentWar][newTargetAverage] as number) || 0;
       datasetsMap[target].push(conf.active ? valueMedian : 0);
       datasetsMap[target].push(conf.active ? valueAverage : 0);
       if (conf.active) {
@@ -97,15 +115,15 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
       }
     }
 
-    for (const [playerTag, playerData] of Object.entries(filteredData)) {
-      const warStats = playerData.scoresFinal?.[currentWar];
+    for (const [_, playerData] of Object.entries(filteredData)) {
+      const warStats: Score = playerData.scoresFinal?.[currentWar];
       if (!warStats) continue;
       const playerName = playerData.originalStats.name;
       if (!playerValuesScore[playerName]) {
         playerValuesScore[playerName] = 0;
       }
       labels.push(playerName);
-      for (const [target, conf] of Object.entries(selectedCategory)) {
+      for (const [target, conf] of Object.entries(selectedCategory) as [CategoryKey, CategoryConfig][]) {
         const value = warStats[target] || 0;
         datasetsMap[target].push(conf.active ? value : 0);
         if (conf.active) {
@@ -124,7 +142,7 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
     const medianeIndex = sortedLabels.indexOf("Mediane");
     const averageIndex = sortedLabels.indexOf("Moyenne");
 
-    const datasSingleRank = Object.entries(defaultConfig).map(([key, conf], index) => {
+    const datasSingleRank = (Object.entries(defaultConfig) as [CategoryKey, CategoryConfig][]).map(([key, conf], index) => {
       const sortedData = sortedIndices.map((i) => datasetsMap[key][i]);
       const baseColors = getColorSettingByIndex(index, Object.keys(filteredData).length, "bar");
 
@@ -152,7 +170,7 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
   const optionsSingleRank = useMemo(() => {
     const safeMaxScore = dynamicMaxScore || 100;
     return {
-      indexAxis: "y",
+      indexAxis: "y" as const,
       responsive: true,
       maintainAspectRatio: false,
       aspectRatio: 1.2,
@@ -166,17 +184,17 @@ const useChartSingleRankingPlayers = (warsStats, filteredData, warsSelected) => 
         },
         legend: {
           display: true,
-          position: "top",
+          position: "top" as const,
           labels: {
             font: { size: 12 },
           },
           onClick: handleClickChartRefSingleRank,
         },
         tooltip: {
-          mode: "index",
+          mode: "index" as const,
           intersect: true,
           callbacks: {
-            footer: (items) => {
+            footer: (items: TooltipItem<"bar">[]) => {
               const total = items.reduce((sum, item) => sum + item.parsed.x, 0);
               return `━━━━━━━━━━\nTotal: ${total}`;
             },
