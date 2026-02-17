@@ -1,9 +1,16 @@
 import { useCallback, useMemo } from "react";
-const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnalysisStats) => {
-  const currentWars = useMemo(() => (warsSelected.size > 0 ? Array.from(warsSelected) : null), [warsSelected]);
+import { WarStatsHistoriqueClanWar, PlayerStats } from "../../../types";
+
+const useSelectorByWar = (
+  warsSelected: Set<string>,
+  playersSelected: Set<string>,
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar },
+  playersAnalysisStats: { [key: string]: PlayerStats },
+) => {
+  const currentWars: string[] | null = useMemo(() => (warsSelected.size > 0 ? Array.from(warsSelected) : null), [warsSelected]);
 
   const selectablePlayers = useMemo(() => {
-    const processedData = {};
+    const processedData: { [key: string]: PlayerStats } = {};
     if (!playersAnalysisStats) return processedData;
     if (!warsStats) return processedData;
     if (!currentWars) return processedData;
@@ -21,7 +28,7 @@ const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnaly
   }, [currentWars, warsStats, playersAnalysisStats]);
 
   const filteredPlayers = useMemo(() => {
-    let processedData = {};
+    let processedData: { [key: string]: PlayerStats } = {};
     if (!playersAnalysisStats) return processedData;
     if (!warsStats) return processedData;
     if (!currentWars) return processedData;
@@ -37,14 +44,14 @@ const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnaly
   }, [currentWars, warsStats, playersAnalysisStats, playersSelected, selectablePlayers]);
 
   const getValidSelectedPlayers = useCallback(
-    (playerTagsSet = null) => {
+    (playerTagsSet: Set<string> | null = null): Set<string> => {
       if (!playerTagsSet) {
         playerTagsSet = playersSelected;
       }
       if (Object.keys(selectablePlayers).length === 0) {
         return new Set();
       }
-      const filteredSet = new Set();
+      const filteredSet: Set<string> = new Set();
       for (const playerTag of playerTagsSet) {
         if (selectablePlayers[playerTag] !== undefined) {
           filteredSet.add(playerTag);
@@ -52,7 +59,7 @@ const useSelectorByWar = (warsSelected, playersSelected, warsStats, playersAnaly
       }
       return filteredSet;
     },
-    [playersSelected, selectablePlayers]
+    [playersSelected, selectablePlayers],
   );
 
   return {
