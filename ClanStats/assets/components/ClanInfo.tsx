@@ -3,6 +3,7 @@ import { BoutonSort } from "../components";
 import { useClanInfo, useTableSort } from "../hooks";
 import type { ClanSearch } from "../types";
 import type { ClanInfo as ClanInfoType } from "../types";
+
 type ClanInfoProps = {
   clan: ClanSearch;
 };

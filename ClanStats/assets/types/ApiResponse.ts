@@ -1,4 +1,4 @@
-import { FetchErrors, ClanInfo, HistoriqueClanWar, RiverRaceLog } from "../types";
+import { FetchErrors, ClanInfo, HistoriqueClanWar, RiverRaceLog, ClanStatsHistoriqueWar } from "../types";
 export interface ApiResponse {
   success?: boolean;
   errors?: FetchErrors;
@@ -23,4 +23,11 @@ export interface RiverRaceLogApiResponse {
   success: boolean;
   message?: string;
   riverRaceLogs?: RiverRaceLog[];
+}
+
+export interface StatsHistoriqueClanWarApiResponse {
+  success: boolean;
+  taskId?: string;
+  status: string;
+  data: ClanStatsHistoriqueWar;
 }

@@ -6,8 +6,8 @@ const useClanWorkflow = () => {
   const [selectedClan, setSelectedClan] = useState<ClanSearch>(null);
   const [activeMembers, setActiveMembers] = useState<HistoriqueClanWar[]>([]);
   const [exMembers, setExMembers] = useState<HistoriqueClanWar[]>([]);
-  const [taskId, setTaskId] = useState("");
-  //const [taskId, setTaskId] = useState("dataTask_#QPJC0JG9_697b18fa64a3e8.25042039");
+  //const [taskId, setTaskId] = useState<string>("");
+  const [taskId, setTaskId] = useState("dataTask_#QPJC0JG9_697b18fa64a3e8.25042039");
 
   // Debug dev uniquement
   useEffect(() => {
