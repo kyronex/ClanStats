@@ -1,9 +1,14 @@
-import React from "react";
+//import React from "react";
 import { useChartCompareTopPlayers } from "../../hooks";
-
+import type { WarStatsHistoriqueClanWar, PlayerStats } from "../../types";
 import { Radar } from "react-chartjs-2";
 
-const ChartCompareTopPlayers = ({ warsStats, filteredData, warsSelected }) => {
+type ChartCompareTopPlayersProps = {
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar };
+  filteredData: { [key: string]: PlayerStats };
+  warsSelected: Set<string>;
+};
+const ChartCompareTopPlayers = ({ warsStats, filteredData, warsSelected }: ChartCompareTopPlayersProps) => {
   const { chartRefTop, optionsTop, formatedTopData, isEmpty } = useChartCompareTopPlayers(warsStats, filteredData, warsSelected);
 
   if (isEmpty) {

@@ -1,9 +1,14 @@
-import React from "react";
+//import React from "react";
 import { useChartCompareScorePlayers } from "../../hooks";
-
+import type { WarStatsHistoriqueClanWar, PlayerStats } from "../../types";
 import { Bar } from "react-chartjs-2";
 
-const ChartCompareScorePlayers = ({ warsStats, filteredData, warsSelected }) => {
+type ChartCompareScorePlayersProps = {
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar };
+  filteredData: { [key: string]: PlayerStats };
+  warsSelected: Set<string>;
+};
+const ChartCompareScorePlayers = ({ warsStats, filteredData, warsSelected }: ChartCompareScorePlayersProps) => {
   const { chartRefScore, optionsScore, formatedScoreData, isEmpty } = useChartCompareScorePlayers(warsStats, filteredData, warsSelected);
 
   if (isEmpty) {

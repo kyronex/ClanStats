@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useChartColorSettings } from "../../../hooks";
+import { WarStatsHistoriqueClanWar, PlayerStats } from "../../../types";
 
 import {
   Chart as ChartJS,
@@ -13,13 +14,19 @@ import {
   CategoryScale,
   BarElement,
   Title,
+  type TooltipItem,
 } from "chart.js";
 
 ChartJS.register(RadialLinearScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale);
-const useChartCompareTopPlayers = (warsStats, filteredData, warsSelected) => {
+
+const useChartCompareTopPlayers = (
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar },
+  filteredData: { [key: string]: PlayerStats },
+  warsSelected: Set<string>,
+) => {
   const { getColorSettingByIndex } = useChartColorSettings();
 
-  const invertPercentage = (currentPercentage) => {
+  const invertPercentage = (currentPercentage: number) => {
     return 100 - currentPercentage;
   };
 
@@ -35,12 +42,12 @@ const useChartCompareTopPlayers = (warsStats, filteredData, warsSelected) => {
   const { formatedTopData } = useMemo(() => {
     if (isEmpty) {
       return {
-        formatedScoreData: { labels: [], datasets: [] },
+        formatedTopData: { labels: [], datasets: [] },
       };
     }
 
     const datasTop = Object.entries(filteredData)
-      .map(([key, data], index) => {
+      .map(([_, data], index) => {
         const warStats = data.scoresFinal?.[currentWar];
         if (!warStats) return null;
 
@@ -79,7 +86,7 @@ const useChartCompareTopPlayers = (warsStats, filteredData, warsSelected) => {
         },
         legend: {
           display: true,
-          position: "top",
+          position: "top" as const,
           labels: {
             font: { size: 12 },
             boxWidth: 12,
@@ -87,7 +94,7 @@ const useChartCompareTopPlayers = (warsStats, filteredData, warsSelected) => {
         },
         tooltip: {
           callbacks: {
-            label: (context) => `${context.dataset.label}: ${context.parsed.r}`,
+            label: (context: TooltipItem<"radar">) => `${context.dataset.label}: ${context.parsed.r}`,
           },
         },
       },
@@ -114,7 +121,7 @@ const useChartCompareTopPlayers = (warsStats, filteredData, warsSelected) => {
           pointLabels: {
             font: {
               size: 11,
-              weight: "bold",
+              weight: "bold" as const,
             },
           },
           grid: {
