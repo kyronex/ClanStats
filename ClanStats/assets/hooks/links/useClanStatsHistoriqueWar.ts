@@ -1,18 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useFetch } from "../../hooks";
+import { StatsHistoriqueClanWarApiResponse } from "../../types";
 
-const useClanStatsHistoriqueWar = (taskId) => {
-  const [data, setData] = useState(null);
-  const [status, setStatus] = useState("idle");
+const useClanStatsHistoriqueWar = (taskId: string) => {
+  const [data, setData] = useState<StatsHistoriqueClanWarApiResponse | null>(null);
+  const [status, setStatus] = useState<string>("idle");
   const { execute, isLoading, errors, hasErrors, clearErrors } = useFetch();
-  const timeoutRef = useRef();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!taskId) return;
     const poll = async () => {
       clearErrors();
       try {
-        const result = await execute("/clanstats/statsHistoriqueClanWar", {
+        const result = await execute<StatsHistoriqueClanWarApiResponse>("/clanstats/statsHistoriqueClanWar", {
           method: "POST",
           body: JSON.stringify({ taskId }),
         });

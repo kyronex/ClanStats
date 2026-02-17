@@ -1,10 +1,15 @@
-import ChartCompareTopPlayers from "./ChartCompareTopPlayers.jsx";
-import ChartCompareScorePlayers from "./ChartCompareScorePlayers.jsx";
-import { SelectorPlayersContainer, WarsList, PlayersList } from "../../components";
 import React from "react";
+import ChartCompareTopPlayers from "./ChartCompareTopPlayers";
+import ChartCompareScorePlayers from "./ChartCompareScorePlayers";
+import { SelectorPlayersContainer, WarsList, PlayersList } from "../../components";
 import { useChartDataSelection } from "../../hooks";
+import { StatsHistoriqueClanWarApiResponse } from "../../types";
 
-const ComparePlayers = ({ rData }) => {
+type ComparePlayersProps = {
+  rData: StatsHistoriqueClanWarApiResponse;
+};
+
+const ComparePlayers = ({ rData }: ComparePlayersProps) => {
   const { filteredPlayers, warsSelected, handlePlayersSelect, handleWarsSelect, playersAnalysisStats, warsStats } =
     useChartDataSelection(rData);
 
