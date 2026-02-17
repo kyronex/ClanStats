@@ -1,17 +1,29 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useToggleSet, useSelectorByWar } from "../../../../hooks";
-// TODO revoir les exposition des variable dans value
+import { WarStatsHistoriqueClanWar, PlayerStats } from "../../../../types";
+
 // 🔹 Hook principal : retourne contexte
+type SelectorPlayersProps = {
+  warsStats: { [key: string]: WarStatsHistoriqueClanWar };
+  playersAnalysisStats: { [key: string]: PlayerStats };
+  handleWarsSelect: (wars: Set<string> | null) => void;
+  handlePlayersSelect: (players: { [key: string]: PlayerStats }) => void;
+  maxWars: number;
+  maxPlayers: number;
+  enableWarSelectAll: boolean;
+  enablePlayerSelectAll: boolean;
+};
+
 function useSelectorPlayers({
   warsStats,
   playersAnalysisStats,
-  handleWarsSelect, // callback optionnel
+  handleWarsSelect,
   handlePlayersSelect,
   maxWars = 1,
   maxPlayers = null,
   enableWarSelectAll = false,
   enablePlayerSelectAll = false,
-}) {
+}: SelectorPlayersProps) {
   const playersToggleOpts = maxPlayers ? { maxSize: maxPlayers } : {};
   const warsToggleOpts = maxWars ? { maxSize: maxWars } : {};
 
@@ -37,7 +49,7 @@ function useSelectorPlayers({
     warsSelected,
     playersSelected,
     warsStats,
-    playersAnalysisStats
+    playersAnalysisStats,
   );
 
   const selectAllPlayers = useMemo(() => {
@@ -96,6 +108,7 @@ function useSelectorPlayers({
   }, [currentWars, playersSelected, getValidSelectedPlayers, replacePlayersSelected]);
 
   const prevHashsRef = useRef({ wars: null, players: null });
+  console.log("warsSelected", warsSelected);
 
   useEffect(() => {
     if (warsSelected.size === 0) return;
@@ -120,17 +133,17 @@ function useSelectorPlayers({
     enableWarSelectAll,
     enablePlayerSelectAll,
 
-    playersSelected,
-    isPlayersSelected,
-    handleSelectedPlayer,
-    replacePlayersSelected,
-    clearPlayersSelected,
-
     warsSelected,
     isWarsSelected,
     handleSelectedWar,
-    replaceWarsSelected,
     clearWarsSelected,
+    //replaceWarsSelected,
+
+    playersSelected,
+    isPlayersSelected,
+    handleSelectedPlayer,
+    clearPlayersSelected,
+    //replacePlayersSelected,
 
     currentWars,
     selectablePlayers,
@@ -139,7 +152,6 @@ function useSelectorPlayers({
 
     selectAllPlayers,
     selectAllWars,
-
     handleSelectAllPlayers,
     handleSelectAllWars,
   };

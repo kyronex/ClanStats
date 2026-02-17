@@ -36,7 +36,7 @@ function PlayersList() {
           </label>
         </div>
       )}
-      {players?.map(([playerTag, playerData], index) => {
+      {players?.map(([playerTag, playerData]) => {
         return (
           <PlayerItem
             key={playerTag}
