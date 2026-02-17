@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
+import { SelectorPlayersContextValue } from "../../../../types";
 
-const SelectorPlayersContext = createContext(null);
+const SelectorPlayersContext = createContext<SelectorPlayersContextValue | null>(null);
 
 function useSelectorPlayersContext() {
   const context = useContext(SelectorPlayersContext);
